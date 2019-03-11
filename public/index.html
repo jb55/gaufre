@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gopher - Commons Host</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <meta name="referrer" content="no-referrer">
+</head>
+<body>
+<style>
+gaufre-text {
+  white-space: pre-wrap;
+  font-family: monospace;
+}
+gaufre-error {
+  color: red;
+}
+</style>
+<main hidden>
+  <header>
+    <button id="back" disabled>Back</button>
+    <button id="forward" disabled>Forward</button>
+    <button id="home">Home</button>
+    <button id="reload" disabled>Reload</button>
+    <form id="location">
+      <input id="url" value="">
+    </form>
+    <button id="progress">Loading activity indicator</button>
+  </header>
+  <article>
+    <gaufre-viewport></gaufre-viewport>
+  </article>
+  <footer>
+    🐹 <a href="https://www.npmjs.com/package/goh">Gopher-over-HTTPS</a>
+    powered by 🐑 <a href="https://commons.host">Commons Host</a>.
+  </footer>
+</main>
+<template id="gaufre-line">
+  <style>
+  p {
+    white-space: pre-wrap;
+    font-family: monospace;
+    margin: 0;
+    min-height: 1em;
+  }
+  a {
+    width: 2em;
+    height: 2em;
+    border: 0.125em;
+  }
+  </style>
+  <!-- <slot></slot> -->
+</template>
+<script src="https://unpkg.com/@ungap/event-target"></script>
+<script>
+/* eslint-env browser */
+
+function typeToFormat (type, fallback = 'directory') {
+  switch (type) {
+    case '0': case 'i':
+      return 'text'
+    case '3':
+      return 'error'
+    case '1':
+      return 'directory'
+    case '4': case '5': case '6': case '9':
+      return 'download'
+    case 'g': case 'I': case 'p':
+      return 'image'
+    case 'h':
+      return 'hyperlink'
+    default:
+      return fallback
+  }
+}
+
+class GaufreViewport extends HTMLElement {
+  clear () {
+    while (this.children.length > 0) {
+      this.removeChild(this.firstChild)
+    }
+  }
+
+  async load ({ response, url, type, format }) {
+    try {
+      let renderer
+      if (format === 'directory') {
+        renderer = document.createElement('gaufre-directory')
+        const text = await response.text()
+        for (const raw of text.split('\r\n')) {
+          if (raw && raw !== '.') {
+            const line = document.createElement('gaufre-line')
+            line.textContent = raw
+            renderer.appendChild(line)
+          }
+        }
+      } else if (format === 'text') {
+        const text = await response.text()
+        renderer = document.createElement('gaufre-text')
+        renderer.textContent = text
+      } else if (format === 'image') {
+        const blob = await response.blob()
+        const url = URL.createObjectURL(blob)
+        renderer = document.createElement('gaufre-image')
+        renderer.setAttribute('url', url)
+      } else {
+        renderer = document.createElement('gaufre-unsupported')
+        renderer.textContent = 'Format not supported'
+      }
+      this.clear()
+      this.appendChild(renderer)
+    } catch (error) {
+      this.error(error)
+    }
+  }
+
+  error (error) {
+    this.clear()
+    console.log(error)
+    const renderer = document.createElement('gaufre-error')
+    renderer.textContent = error.message
+    this.appendChild(renderer)
+  }
+}
+
+customElements.define('gaufre-viewport', GaufreViewport)
+
+class GaufreLine extends HTMLElement {
+  constructor () {
+    super()
+    const template = document.getElementById('gaufre-line')
+    const cloned = template.content.cloneNode(true)
+    this.attachShadow({ mode: 'open' })
+    this.shadowRoot.appendChild(cloned)
+  }
+
+  set textContent (line) {
+    super.textContent = line
+    const type = line.charAt(0)
+    const format = typeToFormat(type, 'unknown')
+    const [name, selector, host, port] = line.substr(1).split('\t')
+    const paragraph = document.createElement('p')
+    paragraph.dataset.format = format
+    if (format === 'text') {
+      paragraph.textContent = name
+    } else if (format === 'directory') {
+      const anchor = document.createElement('a')
+      anchor.textContent = name
+      const origin = port === '70' ? host : `${host}:${port}`
+      const path = selector.length === 0 && type === '1'
+        ? '' : `/${type}${selector}`
+      anchor.href = `gopher://${origin}${path}`
+      paragraph.appendChild(anchor)
+    } else if (format === 'hyperlink') {
+      const anchor = document.createElement('a')
+      anchor.textContent = name
+      anchor.href = selector.replace(/^URL:/i, '')
+      paragraph.appendChild(anchor)
+    } else if (format === 'error') {
+      paragraph.textContent = name
+    } else if (format === 'unknown') {
+      console.log('Unknown format', line)
+      paragraph.textContent = name
+    } else {
+      console.warn('Skipping unsupported format in gaufre-line: ' + line)
+    }
+    this.shadowRoot.appendChild(paragraph)
+  }
+
+  get textContent () {
+    return super.textContent
+  }
+}
+
+customElements.define('gaufre-line', GaufreLine)
+
+class Gaufre extends EventTarget {
+  constructor (options) {
+    super()
+    this.options = options
+    this.history = []
+    this.position = -1
+    this.gopherTypeRegex = /gopher:\/\/[^/]+(?:\/(?<type>.))?/
+  }
+
+  get url () {
+    const { position, history } = this
+    if (position >= 0 && position < history.length) {
+      return history[position]
+    }
+  }
+
+  async go (url) {
+    this.position++
+    while (this.history.length > this.position) {
+      this.history.pop()
+    }
+    this.history.push(url)
+    await this.navigate(url)
+  }
+
+  async back () {
+    if (this.position <= 0) return
+    this.position--
+    await this.navigate(this.history[this.position])
+  }
+
+  async forward () {
+    if (this.position >= this.history.length - 1) return
+    this.position++
+    await this.navigate(this.history[this.position])
+  }
+
+  async reload () {
+    await this.navigate(this.history[this.position])
+  }
+
+  async navigate (url) {
+    const { groups: { type = '1' } } = this.gopherTypeRegex.exec(url)
+    const format = typeToFormat(type)
+    const endpoint = this.options.goh + encodeURIComponent(url)
+    this.dispatchEvent(
+      new CustomEvent('start', { detail: { url, endpoint } })
+    )
+    try {
+      const response = await fetch(endpoint, {
+        headers: { accept: 'application/gopher' }
+      })
+      if (response.ok === true) {
+        const detail = { response, url, type, format }
+        this.dispatchEvent(
+          new CustomEvent('response', { detail })
+        )
+      } else {
+        const { status } = response
+        const error = new Error()
+        error.message = `${status} - Error`
+        error.status = status
+        this.dispatchEvent(
+          new CustomEvent('error', { detail: error })
+        )
+      }
+    } catch (error) {
+      this.dispatchEvent(new CustomEvent('error', { detail: error }))
+    }
+    this.dispatchEvent(
+      new CustomEvent('end', { detail: { url, endpoint } })
+    )
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // const HOME = 'gopher://sdf.org:70/0/sdf/faq/MISC/08' // Small text file
+  // const HOME = 'gopher://gopher.quux.org:70/0/Government/USA/Microsoft/ntscpmcrsft12202cmp.txt' // Large text file with some broken encoding characters
+  // const HOME = 'gopher://gopher.floodgap.com:70/7/v2/vs' // Search form
+  // const HOME = 'gopher://gopher.floodgap.com:70/0/ptloma' // Text file
+  // const HOME = 'gopher://zaibatsu.circumlunar.space' // Contains recent content
+  const HOME = 'gopher://gopher.floodgap.com' // Default to directory
+  const gaufre = new Gaufre({
+    goh: 'https://goh.commons.host:7070/?url=',
+    history: 'gaufre-history'
+  })
+
+  document.getElementById('back')
+    .addEventListener('click', () => gaufre.back())
+  document.getElementById('forward')
+    .addEventListener('click', () => gaufre.forward())
+  document.getElementById('home')
+    .addEventListener('click', () => gaufre.go(HOME))
+  document.getElementById('reload')
+    .addEventListener('click', () => gaufre.reload())
+  document.getElementById('location')
+    .addEventListener('submit', (event) => {
+      event.preventDefault()
+      const url = document.getElementById('url').value
+      if (url === gaufre.url) {
+        gaufre.reload()
+      } else {
+        gaufre.go(url)
+      }
+    })
+
+  gaufre.addEventListener('start', ({ detail: { url, endpoint } }) => {
+    document.getElementById('progress')
+      .classList.add('active')
+    document.getElementById('back').disabled =
+      gaufre.position <= 0
+    document.getElementById('forward').disabled =
+      gaufre.position >= gaufre.history.length - 1
+    document.getElementById('reload').disabled = false
+    document.getElementById('url').value = url
+  })
+  gaufre.addEventListener('error', ({ detail }) => {
+    document.querySelector('gaufre-viewport').error(detail)
+  })
+  gaufre.addEventListener('response', ({ detail }) => {
+    document.querySelector('gaufre-viewport').load(detail)
+  })
+  gaufre.addEventListener('end', ({ detail: { url, endpoint } }) => {
+    document.getElementById('progress')
+      .classList.remove('active')
+  })
+
+  document.addEventListener('click', (event) => {
+    const elementNode = Node.ELEMENT_NODE
+    for (const target of event.composedPath()) {
+      if (target.nodeType === elementNode && target.localName === 'a') {
+        if (target.protocol === 'gopher:') {
+          event.preventDefault()
+          const href = window.location.origin + '/' + encodeURI(target.href)
+          window.history.pushState(null, '', href)
+          window.dispatchEvent(new PopStateEvent('popstate'))
+          break
+        }
+      }
+    }
+  })
+
+  window.addEventListener('popstate', (event) => {
+    router(location)
+  })
+
+  async function router (url) {
+    const path = url.href.substr(url.origin.length + 1)
+    let gopherUrl
+    if (path.startsWith('gopher://')) {
+      gopherUrl = path
+    } else if (path === '') {
+      gopherUrl = HOME
+    } else {
+      return
+    }
+    await gaufre.go(gopherUrl)
+  }
+
+  document.querySelector('main')
+    .removeAttribute('hidden')
+  router(location)
+})
+</script>
+</body>
+</html>

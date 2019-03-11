@@ -1,0 +1,26 @@
+{
+  "name": "gaufre",
+  "version": "1.0.0",
+  "description": "Gopher-over-HTTPS (GoH) web client",
+  "repository": "gitlab:commonshost/gaufre",
+  "author": "Sebastiaan Deckers <sebdeckers83@gmail.com>",
+  "license": "ISC",
+  "scripts": {
+    "start": "open public/index.html",
+    "test": "npm run lint",
+    "lint": "standard --verbose --plugin html '**/*.html' | snazzy",
+    "deploy": "commonshost deploy"
+  },
+  "keywords": [
+    "gopher",
+    "gopheroverhttps",
+    "goh"
+  ],
+  "devDependencies": {
+    "@commonshost/cli": "^4.1.0",
+    "eslint-plugin-html": "^5.0.3",
+    "snazzy": "^8.0.0",
+    "standard": "^12.0.1",
+    "tape": "^4.10.1"
+  }
+}
