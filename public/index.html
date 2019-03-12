@@ -3,17 +3,170 @@
 <head>
   <title>Gopher - Commons Host</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="icon" type="image/png" href="/favicon.png">
   <meta name="referrer" content="no-referrer">
 </head>
 <body>
 <style>
+@font-face {
+  font-family: font-stack-emoji;
+  unicode-range: U+1F300-1F5FF, U+1F600-1F64F, U+1F680-1F6FF, U+2600-26FF;
+  src: local(Segoe UI Emoji); /* Windows 8.1+ Edge fix */
+  src:
+    /* macOS, iOS */
+    local(Apple Color Emoji),
+    /* Windows 8.1+ */
+    local(Segoe UI Emoji),
+    /* Linux Firefox */
+    local(Twemoji Mozilla),
+    local(EmojiOne Mozilla),
+    /* Ubuntu Firefox */
+    local(Twitter Color Emoji),
+    /* Android */
+    local(Noto Color Emoji),
+    local(Android Emoji),
+    /* Linux */
+    local(Emoji One Color),
+    local(EmojiOne Color),
+    local(EmojiSymbols),
+    local(Symbola);
+}
+
+@font-face {
+  font-family: font-stack-monospace;
+  src:
+    local(Menlo),
+    local(Monaco),
+    local(Consolas),
+    local(DejaVu Sans Mono),
+    local(Bitstream Vera Sans Mono),
+    local(Andalé Mono);
+}
+
+:host,
+:root {
+  --font-stack-monospace:
+    font-stack-emoji,
+    font-stack-monospace,
+    monospace;
+}
+
+:root, html, body {
+  margin: 0;
+  height: 100%;
+  width: 100%;
+}
+main {
+  height: 100%;
+  width: 100%;
+  display: grid;
+  grid-template-areas:
+    "location progress"
+    "viewport viewport"
+    "footer footer";
+  grid-template-columns: auto 50px;
+  grid-template-rows: 50px auto 50px;
+}
+main > header {
+  grid-area: location;
+  background-color: black;
+}
+main > header > form {
+  width: 100%;
+  height: 100%;
+  display: grid;
+}
+main > header > form > input {
+  align-self: stretch;
+  justify-self: stretch;
+  margin: 0;
+  padding: 0 5px;
+  border: 5px solid black;
+  text-align: center;
+  background-color: white;
+  font-size: 24px;
+  font-family: var(--font-stack-monospace);
+}
+main > aside {
+  grid-area: progress;
+  background-color: black;
+}
+main > aside > button {
+  background: none;
+  border: none;
+  font-size: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+main > aside > button {
+  font-family: var(--font-stack-monospace);
+}
+main > aside > button:before {
+  content: '🐹';
+  font-size: 40px;
+}
+main > aside > button.active {
+  animation-name: spinner;
+  animation-timing-function: ease-in-out;
+  animation-duration: 1.5s;
+  animation-play-state: running;
+  animation-iteration-count: infinite;
+}
+@keyframes spinner {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(-360deg);
+  }
+}
+main > article {
+  grid-area: viewport;
+  overflow: auto;
+  padding: 1em;
+  line-height: 1.25em;
+}
+gaufre-viewport {
+  display: block;
+}
+gaufre-directory {
+  display: block;
+}
 gaufre-text {
+  display: block;
   white-space: pre-wrap;
-  font-family: monospace;
+  font-family: var(--font-stack-monospace);
 }
 gaufre-error {
   color: red;
+}
+gaufre-line {
+  display: block;
+}
+gaufre-line p {
+  white-space: pre-wrap;
+  font-family: var(--font-stack-monospace);
+  margin: 0;
+  min-height: 1em;
+}
+gaufre-line a {
+  text-decoration: none;
+}
+main > footer {
+  grid-area: footer;
+  background-color: black;
+  color: white;
+  text-align: center;
+  font-size: 24px;
+  font-family: var(--font-stack-monospace);
+  overflow: hidden;
+}
+main > footer p {
+  display: inline;
+}
+main > footer p > a {
+  color: white;
 }
 </style>
 <main hidden>
@@ -21,39 +174,25 @@ gaufre-error {
     <form id="location">
       <input id="url" value="">
     </form>
-    <button id="progress">Loading activity indicator</button>
   </header>
+  <aside>
+    <button id="progress">Loading activity indicator</button>
+  </aside>
   <article>
     <gaufre-viewport></gaufre-viewport>
   </article>
   <footer>
-    🐹 <a href="https://www.npmjs.com/package/goh">Gopher-over-HTTPS</a>
-    powered by 🐑 <a href="https://commons.host">Commons Host</a>.
+    <p id="goh">🐹 <a href="https://www.npmjs.com/package/goh">Gopher-over-HTTPS</a></p>
+    <p id="commonshost">powered by 🐑 <a href="https://commons.host">Commons Host</a></p>
   </footer>
 </main>
-<template id="gaufre-line">
-  <style>
-  p {
-    white-space: pre-wrap;
-    font-family: monospace;
-    margin: 0;
-    min-height: 1em;
-  }
-  a {
-    width: 2em;
-    height: 2em;
-    border: 0.125em;
-  }
-  </style>
-  <!-- <slot></slot> -->
-</template>
 <script src="https://unpkg.com/@ungap/event-target"></script>
 <script>
 /* eslint-env browser */
 
 function typeToFormat (type, fallback = 'directory') {
   switch (type) {
-    case '0': case 'i':
+    case '0':
       return 'text'
     case '3':
       return 'error'
@@ -65,6 +204,8 @@ function typeToFormat (type, fallback = 'directory') {
       return 'image'
     case 'h':
       return 'hyperlink'
+    case 'i':
+      return 'info'
     default:
       return fallback
   }
@@ -78,36 +219,32 @@ class GaufreViewport extends HTMLElement {
   }
 
   async load ({ response, url, type, format }) {
-    try {
-      let renderer
-      if (format === 'directory') {
-        renderer = document.createElement('gaufre-directory')
-        const text = await response.text()
-        for (const raw of text.split('\r\n')) {
-          if (raw && raw !== '.') {
-            const line = document.createElement('gaufre-line')
-            line.textContent = raw
-            renderer.appendChild(line)
-          }
+    let renderer
+    if (format === 'directory') {
+      renderer = document.createElement('gaufre-directory')
+      const text = await response.text()
+      for (const raw of text.split(/\r?\n/g)) {
+        if (raw && raw !== '.') {
+          const line = document.createElement('gaufre-line')
+          line.textContent = raw
+          renderer.appendChild(line)
         }
-      } else if (format === 'text') {
-        const text = await response.text()
-        renderer = document.createElement('gaufre-text')
-        renderer.textContent = text
-      } else if (format === 'image') {
-        const blob = await response.blob()
-        const url = URL.createObjectURL(blob)
-        renderer = document.createElement('gaufre-image')
-        renderer.setAttribute('url', url)
-      } else {
-        renderer = document.createElement('gaufre-unsupported')
-        renderer.textContent = 'Format not supported'
       }
-      this.clear()
-      this.appendChild(renderer)
-    } catch (error) {
-      this.error(error)
+    } else if (format === 'text' || format === 'info') {
+      const text = await response.text()
+      renderer = document.createElement('gaufre-text')
+      renderer.textContent = text
+    } else if (format === 'image') {
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      renderer = document.createElement('gaufre-image')
+      renderer.setAttribute('url', url)
+    } else {
+      renderer = document.createElement('gaufre-unsupported')
+      renderer.textContent = 'Format not supported'
     }
+    this.clear()
+    this.appendChild(renderer)
   }
 
   error (error) {
@@ -122,53 +259,66 @@ class GaufreViewport extends HTMLElement {
 customElements.define('gaufre-viewport', GaufreViewport)
 
 class GaufreLine extends HTMLElement {
-  constructor () {
-    super()
-    const template = document.getElementById('gaufre-line')
-    const cloned = template.content.cloneNode(true)
-    this.attachShadow({ mode: 'open' })
-    this.shadowRoot.appendChild(cloned)
-  }
-
   set textContent (line) {
-    super.textContent = line
+    this._textContent = line
     const type = line.charAt(0)
     const format = typeToFormat(type, 'unknown')
+    if (format === 'unknown') {
+      console.log('Unknown format', line)
+    }
     const [name, selector, host, port] = line.substr(1).split('\t')
     const paragraph = document.createElement('p')
-    paragraph.dataset.format = format
-    if (format === 'text') {
-      paragraph.textContent = name
-    } else if (format === 'directory') {
+    this.setAttribute('format', format)
+    if (selector) {
       const anchor = document.createElement('a')
       anchor.textContent = name
-      const origin = port === '70' ? host : `${host}:${port}`
-      const path = selector.length === 0 && type === '1'
-        ? '' : `/${type}${selector}`
-      anchor.href = `gopher://${origin}${path}`
+      if (format === 'hyperlink') {
+        anchor.href = selector.replace(/^URL:/i, '')
+      } else {
+        const origin = port === '70' ? host : `${host}:${port}`
+        const path = (selector.length === 0 && type === '1')
+          ? '' : `/${type}${selector}`
+        anchor.href = `gopher://${origin}${path}`
+      }
       paragraph.appendChild(anchor)
-    } else if (format === 'hyperlink') {
-      const anchor = document.createElement('a')
-      anchor.textContent = name
-      anchor.href = selector.replace(/^URL:/i, '')
-      paragraph.appendChild(anchor)
-    } else if (format === 'error') {
-      paragraph.textContent = name
-    } else if (format === 'unknown') {
-      console.log('Unknown format', line)
-      paragraph.textContent = name
     } else {
-      console.warn('Skipping unsupported format in gaufre-line: ' + line)
+      paragraph.textContent = name
     }
-    this.shadowRoot.appendChild(paragraph)
+    this.appendChild(paragraph)
   }
 
   get textContent () {
-    return super.textContent
+    return this._textContent
   }
 }
 
 customElements.define('gaufre-line', GaufreLine)
+
+class GaufreImage extends HTMLElement {
+  constructor () {
+    super()
+  }
+
+  connectedCallback () {
+    if (!this.img) {
+      this.img = document.createElement('img')
+      this.img.src = this.getAttribute('url')
+      this.appendChild(this.img)
+    }
+  }
+
+  static get observedAttributes() {
+    return ['url']
+  }
+
+  attributeChangedCallback (name, oldValue, newValue) {
+    if (this.img) {
+      this.img.src = newValue
+    }
+  }
+}
+
+customElements.define('gaufre-image', GaufreImage)
 
 class Gaufre extends EventTarget {
   constructor (options) {
@@ -184,10 +334,15 @@ class Gaufre extends EventTarget {
     this.dispatchEvent(
       new CustomEvent('start', { detail: { url, endpoint } })
     )
+    let response
     try {
-      const response = await fetch(endpoint, {
+      response = await fetch(endpoint, {
         headers: { accept: 'application/gopher' }
       })
+    } catch (error) {
+      this.dispatchEvent(new CustomEvent('error', { detail: error }))
+    }
+    if (response) {
       if (response.ok === true) {
         const detail = { response, url, type, format }
         this.dispatchEvent(
@@ -198,12 +353,8 @@ class Gaufre extends EventTarget {
         const error = new Error()
         error.message = `${status} - Error`
         error.status = status
-        this.dispatchEvent(
-          new CustomEvent('error', { detail: error })
-        )
+        this.dispatchEvent(new CustomEvent('error', { detail: error }))
       }
-    } catch (error) {
-      this.dispatchEvent(new CustomEvent('error', { detail: error }))
     }
     this.dispatchEvent(
       new CustomEvent('end', { detail: { url, endpoint } })
@@ -212,8 +363,14 @@ class Gaufre extends EventTarget {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Images
+  // const HOME = 'gopher://gopher.floodgap.com/1/overbite/ss' // Screenshot gallery
+  // const HOME = 'gopher://gopher.floodgap.com/1/gstats' // Statistics dashboard
+  // const HOME = 'gopher://gopher.floodgap.com/1/fun' // Comics
+  // Text
   // const HOME = 'gopher://sdf.org:70/0/sdf/faq/MISC/08' // Small text file
   // const HOME = 'gopher://gopher.quux.org:70/0/Government/USA/Microsoft/ntscpmcrsft12202cmp.txt' // Large text file with some broken encoding characters
+  // Form
   // const HOME = 'gopher://gopher.floodgap.com:70/7/v2/vs' // Search form
   // const HOME = 'gopher://gopher.floodgap.com:70/0/ptloma' // Text file
   // const HOME = 'gopher://zaibatsu.circumlunar.space' // Contains recent content
