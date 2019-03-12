@@ -46,7 +46,9 @@
 :host,
 :root {
   --font-stack-monospace:
-    font-stack-emoji,
+    /* The emoji stack has issues with Safari. On macOS some line endings */
+    /* are miscalculated, making links partially unclickable. */
+    /* font-stack-emoji, */
     font-stack-monospace,
     monospace;
 }
@@ -55,28 +57,28 @@
   margin: 0;
   height: 100%;
   width: 100%;
+  -webkit-text-size-adjust: 100%;
 }
 main {
   height: 100%;
   width: 100%;
-  display: grid;
-  grid-template-areas:
-    "location progress"
-    "viewport viewport"
-    "footer footer";
-  grid-template-columns: auto 50px;
-  grid-template-rows: 50px auto 50px;
+  display: flex;
+  flex-direction: column;
 }
 main > header {
-  grid-area: location;
+  height: 50px;
+  flex: none;
+  display: flex;
+  flex-direction: row;
   background-color: black;
 }
-main > header > form {
+main > header > #location {
   width: 100%;
   height: 100%;
   display: grid;
+  flex: auto;
 }
-main > header > form > input {
+main > header > #location > #url {
   align-self: stretch;
   justify-self: stretch;
   margin: 0;
@@ -84,32 +86,28 @@ main > header > form > input {
   border: 5px solid black;
   text-align: center;
   background-color: white;
-  font-size: 24px;
+  font-size: 16px;
   font-family: var(--font-stack-monospace);
 }
-main > aside {
-  grid-area: progress;
-  background-color: black;
-}
-main > aside > button {
+main > header > #progress {
   background: none;
   border: none;
   font-size: 0;
-  width: 100%;
+  width: 50px;
   height: 100%;
   overflow: hidden;
-}
-main > aside > button {
   font-family: var(--font-stack-monospace);
+  text-align: center;
+  flex: none;
 }
-main > aside > button:before {
+main > header > #progress:before {
   content: '🐹';
   font-size: 40px;
 }
-main > aside > button.active {
+main > header > #progress.active {
   animation-name: spinner;
-  animation-timing-function: ease-in-out;
-  animation-duration: 1.5s;
+  animation-timing-function: linear;
+  animation-duration: 1s;
   animation-play-state: running;
   animation-iteration-count: infinite;
 }
@@ -118,34 +116,59 @@ main > aside > button.active {
     transform: rotateY(0deg);
   }
   to {
-    transform: rotateY(-360deg);
+    transform: rotateY(360deg);
   }
 }
 main > article {
-  grid-area: viewport;
+  flex: auto;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 1em;
   line-height: 1.25em;
+  font-size: 16px;
+}
+@media (max-width: 700px) {
+  main > article {
+    font-size: 14px;
+  }
+}
+@media (max-width: 600px) {
+  main > article {
+    font-size: 12px;
+  }
 }
 gaufre-viewport {
   display: block;
+  text-align: center;
+}
+gaufre-viewport > * {
+  text-align: left;
 }
 gaufre-directory {
   display: block;
 }
 gaufre-text {
   display: block;
-  white-space: pre-wrap;
+  white-space: pre;
   font-family: var(--font-stack-monospace);
 }
 gaufre-error {
   color: red;
+  display: block;
+  white-space: pre;
+  font-family: var(--font-stack-monospace);
+}
+gaufre-image {
+  display: inline-block;
 }
 gaufre-line {
   display: block;
 }
+gaufre-line[format='error'] {
+  color: red;
+}
 gaufre-line p {
-  white-space: pre-wrap;
+  white-space: pre;
   font-family: var(--font-stack-monospace);
   margin: 0;
   min-height: 1em;
@@ -154,18 +177,27 @@ gaufre-line a {
   text-decoration: none;
 }
 main > footer {
-  grid-area: footer;
+  height: 50px;
+  flex: none;
   background-color: black;
   color: white;
   text-align: center;
-  font-size: 24px;
+  font-size: 16px;
   font-family: var(--font-stack-monospace);
+  font-family: 
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 main > footer p {
+  line-height: 1.25;
   display: inline;
 }
-main > footer p > a {
+main > footer span {
+  white-space: nowrap;
+}
+main > footer a {
   color: white;
 }
 </style>
@@ -174,16 +206,16 @@ main > footer p > a {
     <form id="location">
       <input id="url" value="">
     </form>
+    <div id="progress">Loading activity indicator</div>
   </header>
-  <aside>
-    <button id="progress">Loading activity indicator</button>
-  </aside>
   <article>
     <gaufre-viewport></gaufre-viewport>
   </article>
   <footer>
-    <p id="goh">🐹 <a href="https://www.npmjs.com/package/goh">Gopher-over-HTTPS</a></p>
-    <p id="commonshost">powered by 🐑 <a href="https://commons.host">Commons Host</a></p>
+    <p>
+      <span id="goh"><a href="https://www.npmjs.com/package/goh">Gopher-over-HTTPS</a></span>
+      <span id="commonshost">powered by 🐑 <a href="https://commons.host">Commons Host</a></span>
+    </p>
   </footer>
 </main>
 <script src="https://unpkg.com/@ungap/event-target"></script>
@@ -239,6 +271,10 @@ class GaufreViewport extends HTMLElement {
       const url = URL.createObjectURL(blob)
       renderer = document.createElement('gaufre-image')
       renderer.setAttribute('url', url)
+    } else if (format === 'error') {
+      const text = await response.text()
+      renderer = document.createElement('gaufre-line')
+      renderer.textContent = text
     } else {
       renderer = document.createElement('gaufre-unsupported')
       renderer.textContent = 'Format not supported'
@@ -269,7 +305,14 @@ class GaufreLine extends HTMLElement {
     const [name, selector, host, port] = line.substr(1).split('\t')
     const paragraph = document.createElement('p')
     this.setAttribute('format', format)
-    if (selector) {
+    const linkableFormats = [
+      'text',
+      'directory',
+      'download',
+      'image',
+      'hyperlink'
+    ]
+    if (linkableFormats.includes(format)) {
       const anchor = document.createElement('a')
       anchor.textContent = name
       if (format === 'hyperlink') {
@@ -295,10 +338,6 @@ class GaufreLine extends HTMLElement {
 customElements.define('gaufre-line', GaufreLine)
 
 class GaufreImage extends HTMLElement {
-  constructor () {
-    super()
-  }
-
   connectedCallback () {
     if (!this.img) {
       this.img = document.createElement('img')
@@ -307,7 +346,7 @@ class GaufreImage extends HTMLElement {
     }
   }
 
-  static get observedAttributes() {
+  static get observedAttributes () {
     return ['url']
   }
 
@@ -328,7 +367,9 @@ class Gaufre extends EventTarget {
   }
 
   async navigate (url) {
-    const { groups: { type = '1' } } = this.gopherTypeRegex.exec(url)
+    const matches = this.gopherTypeRegex.exec(url)
+    if (!matches) return
+    const { groups: { type = '1' } } = matches
     const format = typeToFormat(type)
     const endpoint = this.options.goh + encodeURIComponent(url)
     this.dispatchEvent(
@@ -381,9 +422,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('location')
     .addEventListener('submit', (event) => {
+      event.stopPropagation()
       event.preventDefault()
       const url = document.getElementById('url').value
-      gaufre.navigate(url)
+      const href = window.location.origin + '/' + encodeURI(url)
+      window.history.pushState(null, '', href)
+      window.dispatchEvent(new PopStateEvent('popstate'))
     })
 
   gaufre.addEventListener('start', ({ detail: { url, endpoint } }) => {
@@ -391,11 +435,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       .classList.add('active')
     document.getElementById('url').value = url
   })
-  gaufre.addEventListener('error', ({ detail }) => {
-    document.querySelector('gaufre-viewport').error(detail)
+  gaufre.addEventListener('error', async ({ detail }) => {
+    await document.querySelector('gaufre-viewport').error(detail)
+    document.querySelector('main > article').scrollTop = 0
   })
-  gaufre.addEventListener('response', ({ detail }) => {
-    document.querySelector('gaufre-viewport').load(detail)
+  gaufre.addEventListener('response', async ({ detail }) => {
+    await document.querySelector('gaufre-viewport').load(detail)
+    document.querySelector('main > article').scrollTop = 0
   })
   gaufre.addEventListener('end', ({ detail: { url, endpoint } }) => {
     document.getElementById('progress')
@@ -407,6 +453,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     for (const target of event.composedPath()) {
       if (target.nodeType === elementNode && target.localName === 'a') {
         if (target.protocol === 'gopher:') {
+          event.stopPropagation()
           event.preventDefault()
           const href = window.location.origin + '/' + encodeURI(target.href)
           window.history.pushState(null, '', href)
@@ -421,8 +468,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     router(location)
   })
 
-  async function router (url) {
-    const path = url.href.substr(url.origin.length + 1)
+  function router (url) {
+    const path = decodeURI(url.href.substr(url.origin.length + 1))
     const squashedGopherUrl = /^gopher:\/[^/]/
     let gopherUrl
     if (path.startsWith('gopher://')) {
@@ -436,7 +483,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
       return
     }
-    await gaufre.navigate(gopherUrl)
+    if (gopherUrl) {
+      gaufre.navigate(gopherUrl)
+    }
   }
 
   document.querySelector('main')
