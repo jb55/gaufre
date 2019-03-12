@@ -266,11 +266,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function router (url) {
     const path = url.href.substr(url.origin.length + 1)
+    const squashedGopherUrl = /^gopher:\/[^/]/
     let gopherUrl
     if (path.startsWith('gopher://')) {
       gopherUrl = path
     } else if (path === '') {
       gopherUrl = HOME
+    } else if (squashedGopherUrl.text(path)) {
+      const doubleSlash = '/' + path.replace(squashedGopherUrl, 'gopher://')
+      window.history.replaceState(null, '', doubleSlash)
+      window.dispatchEvent(new PopStateEvent('popstate'))
     } else {
       return
     }
