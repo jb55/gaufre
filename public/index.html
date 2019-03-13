@@ -431,9 +431,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     .addEventListener('submit', (event) => {
       event.stopPropagation()
       event.preventDefault()
-      const url = document.getElementById('url').value
+      let url = document.getElementById('url').value
+      if (url.length && !url.startsWith('gopher://')) {
+        url = `gopher://${url}`
+      }
       const href = window.location.origin + '/' + encodeURI(url)
-      window.history.pushState(null, '', href)
+      if (location.href !== href) {
+        window.history.pushState(null, '', href)
+      }
       window.dispatchEvent(new PopStateEvent('popstate'))
     })
 
