@@ -121,11 +121,11 @@ main > header > #progress.active {
 }
 main > article {
   flex: auto;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 1em;
+  overflow: hidden;
   line-height: 1.25em;
   font-size: 16px;
+  height: 100%;
+  display: flex;
 }
 @media (max-width: 700px) {
   main > article {
@@ -138,11 +138,19 @@ main > article {
   }
 }
 gaufre-viewport {
-  display: block;
-  text-align: center;
+  display: flex;
+  flex: auto;
+  overflow: hidden;
 }
 gaufre-viewport > * {
-  text-align: left;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+  padding: 0.5em;
+  height: 100%;
+  max-height: 100%;
+  width: 100%;
+  flex: auto;
 }
 gaufre-directory {
   display: block;
@@ -160,6 +168,12 @@ gaufre-error {
 }
 gaufre-image {
   display: inline-block;
+}
+gaufre-image > img {
+  width: 100%;
+}
+gaufre-image[zoomed] > img {
+  width: auto;
 }
 gaufre-line {
   display: block;
@@ -349,6 +363,9 @@ class GaufreImage extends HTMLElement {
       this.img = document.createElement('img')
       this.img.src = this.getAttribute('url')
       this.appendChild(this.img)
+      this.addEventListener('click', () => {
+        this.toggleAttribute('zoomed')
+      })
     }
   }
 
