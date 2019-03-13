@@ -432,7 +432,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   gaufre.addEventListener('start', ({ detail: { url, endpoint } }) => {
     document.getElementById('progress')
       .classList.add('active')
-    document.getElementById('url').value = url
+    document.getElementById('url').value = encodeURI(url)
   })
   gaufre.addEventListener('error', async ({ detail }) => {
     await document.querySelector('gaufre-viewport').error(detail)
@@ -454,7 +454,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (target.protocol === 'gopher:') {
           event.stopPropagation()
           event.preventDefault()
-          const href = window.location.origin + '/' + encodeURI(target.href)
+          const href = window.location.origin + '/' + target.href
           window.history.pushState(null, '', href)
           window.dispatchEvent(new PopStateEvent('popstate'))
           break
