@@ -237,6 +237,8 @@ function typeToFormat (type, fallback = 'directory') {
       return 'hyperlink'
     case 'i':
       return 'info'
+    case 'x':
+      return 'svg'
     default:
       return fallback
   }
@@ -270,6 +272,10 @@ class GaufreViewport extends HTMLElement {
       const url = URL.createObjectURL(blob)
       renderer = document.createElement('gaufre-image')
       renderer.setAttribute('url', url)
+    } else if (format === 'svg') {
+      const text = await response.text()
+      renderer = document.createElement('gaufre-image')
+      renderer.setAttribute('url', 'data:image/svg+xml;base64,' + btoa(text))
     } else if (format === 'error') {
       const text = await response.text()
       renderer = document.createElement('gaufre-line')
@@ -309,7 +315,8 @@ class GaufreLine extends HTMLElement {
       'directory',
       'download',
       'image',
-      'hyperlink'
+      'hyperlink',
+      'svg'
     ]
     if (linkableFormats.includes(format)) {
       const anchor = document.createElement('a')
@@ -407,6 +414,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // const HOME = 'gopher://gopher.floodgap.com/1/overbite/ss' // Screenshot gallery
   // const HOME = 'gopher://gopher.floodgap.com/1/gstats' // Statistics dashboard
   // const HOME = 'gopher://gopher.floodgap.com/1/fun' // Comics
+  // const HOME = 'https://localhost:8443/gopher://gopher.wensley.org.uk/1/graphs' // SVG charts
   // Text
   // const HOME = 'gopher://sdf.org:70/0/sdf/faq/MISC/08' // Small text file
   // const HOME = 'gopher://gopher.quux.org:70/0/Government/USA/Microsoft/ntscpmcrsft12202cmp.txt' // Large text file with some broken encoding characters
