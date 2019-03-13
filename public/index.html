@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Gopher - Commons Host</title>
+  <title>Gaufre - Commons Host</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="/favicon.png">
   <meta name="referrer" content="no-referrer">
@@ -236,7 +236,15 @@ main > footer a {
     </p>
   </footer>
 </main>
-<script src="https://unpkg.com/@ungap/event-target"></script>
+
+<!-- <script src="https://unpkg.com/@ungap/event-target"></script> -->
+<script>
+/* eslint-disable */
+/*! (c) Andrea Giammarchi - ISC */
+var self=this||{};try{self.EventTarget=(new EventTarget).constructor}catch(e){!function(e,o){var t=e.create,r=e.defineProperty,n=i.prototype;function i(){"use strict";o.set(this,t(null))}function s(e,t,n){r(e,t,{configurable:!0,writable:!0,value:n})}function a(e){var t=e.options;t&&t.once&&e.target.removeEventListener(this.type,e.listener),"function"==typeof e.listener?e.listener.call(e.target,this):e.listener.handleEvent(this)}s(n,"addEventListener",function(e,t,n){for(var r=o.get(this),i=r[e]||(r[e]=[]),s=0,a=i.length;s<a;s++)if(i[s].listener===t)return;i.push({target:this,listener:t,options:n})}),s(n,"dispatchEvent",function(e){var t=o.get(this)[e.type];return t&&(s(e,"target",this),s(e,"currentTarget",this),t.slice(0).forEach(a,e),delete e.currentTarget,delete e.target),!0}),s(n,"removeEventListener",function(e,t){for(var n=o.get(this),r=n[e]||(n[e]=[]),i=0,s=r.length;i<s;i++)if(r[i].listener===t)return void r.splice(i,1)}),self.EventTarget=i}(Object,new WeakMap)}
+/* eslint-enable */
+</script>
+
 <script>
 /* eslint-env browser */
 
@@ -528,6 +536,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     router(location)
   })
 
+  const title = document.title
   function router (url) {
     const path = decodeURI(url.href.substr(url.origin.length + 1))
     const squashedGopherUrl = /^gopher:\/[^/]/
@@ -544,6 +553,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return
     }
     if (gopherUrl) {
+      document.title = `${gopherUrl.replace(/^gopher:\/\//, '')} - ${title}`
       gaufre.navigate(gopherUrl)
     }
   }
