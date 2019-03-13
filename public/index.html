@@ -170,10 +170,10 @@ gaufre-image {
   display: inline-block;
 }
 gaufre-image > img {
-  width: 100%;
+  width: auto;
 }
 gaufre-image[zoomed] > img {
-  width: auto;
+  width: 100%;
 }
 gaufre-line {
   display: block;
@@ -189,6 +189,11 @@ gaufre-line p {
 }
 gaufre-line a {
   text-decoration: none;
+}
+gaufre-unsupported {
+  display: block;
+  white-space: pre;
+  font-family: var(--font-stack-monospace);
 }
 main > footer {
   height: 50px;
@@ -253,6 +258,8 @@ function typeToFormat (type, fallback = 'directory') {
       return 'info'
     case 'x':
       return 'svg'
+    case 's':
+      return 'audio'
     default:
       return fallback
   }
@@ -285,11 +292,16 @@ class GaufreViewport extends HTMLElement {
       const blob = await response.blob()
       const url = URL.createObjectURL(blob)
       renderer = document.createElement('gaufre-image')
-      renderer.setAttribute('url', url)
+      renderer.setAttribute('src', url)
     } else if (format === 'svg') {
       const text = await response.text()
       renderer = document.createElement('gaufre-image')
       renderer.setAttribute('url', 'data:image/svg+xml;base64,' + btoa(text))
+    } else if (format === 'audio') {
+      const mime = 'audio/wav' // Safari needs this, Chrome ignores it (AFAIK?)
+      const blob = new Blob([await response.blob()], { type: mime })
+      renderer = document.createElement('gaufre-audio')
+      renderer.srcObject = blob
     } else if (format === 'error') {
       const text = await response.text()
       renderer = document.createElement('gaufre-line')
@@ -330,7 +342,8 @@ class GaufreLine extends HTMLElement {
       'download',
       'image',
       'hyperlink',
-      'svg'
+      'svg',
+      'audio'
     ]
     if (linkableFormats.includes(format)) {
       const anchor = document.createElement('a')
@@ -359,10 +372,10 @@ customElements.define('gaufre-line', GaufreLine)
 
 class GaufreImage extends HTMLElement {
   connectedCallback () {
-    if (!this.img) {
-      this.img = document.createElement('img')
-      this.img.src = this.getAttribute('url')
-      this.appendChild(this.img)
+    if (!this.embed) {
+      this.embed = document.createElement('img')
+      this.embed.src = this.getAttribute('src')
+      this.appendChild(this.embed)
       this.addEventListener('click', () => {
         this.toggleAttribute('zoomed')
       })
@@ -370,29 +383,45 @@ class GaufreImage extends HTMLElement {
   }
 
   static get observedAttributes () {
-    return ['url']
+    return ['src']
   }
 
   attributeChangedCallback (name, oldValue, newValue) {
-    if (this.img) {
-      this.img.src = newValue
+    if (this.embed) {
+      this.embed[name] = newValue
     }
   }
 }
 
 customElements.define('gaufre-image', GaufreImage)
 
+class GaufreAudio extends HTMLElement {
+  connectedCallback () {
+    if (!this.embed) {
+      this.embed = document.createElement('audio')
+      this.embed.setAttribute('controls', true)
+      this.embed.setAttribute('volume', true)
+      // this.embed.srcObject = this.srcObject
+      const url = URL.createObjectURL(this.srcObject)
+      this.embed.src = url
+      this.appendChild(this.embed)
+    }
+  }
+}
+
+customElements.define('gaufre-audio', GaufreAudio)
+
 class Gaufre extends EventTarget {
   constructor (options) {
     super()
     this.options = options
-    this.gopherTypeRegex = /gopher:\/\/[^/]+(?:\/(?<type>.))?/
+    this.gopherTypeRegex = /gopher:\/\/[^/]+(?:\/(.))?/
   }
 
   async navigate (url) {
     const matches = this.gopherTypeRegex.exec(url)
     if (!matches) return
-    const { groups: { type = '1' } } = matches
+    const type = matches[1] || '1'
     const format = typeToFormat(type)
     const endpoint = this.options.goh + encodeURIComponent(url)
     this.dispatchEvent(
@@ -432,6 +461,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // const HOME = 'gopher://gopher.floodgap.com/1/gstats' // Statistics dashboard
   // const HOME = 'gopher://gopher.floodgap.com/1/fun' // Comics
   // const HOME = 'https://localhost:8443/gopher://gopher.wensley.org.uk/1/graphs' // SVG charts
+  // Sound
+  // const HOME = 'gopher://mozz.us:7005/s/files/wololo.wav'
   // Text
   // const HOME = 'gopher://sdf.org:70/0/sdf/faq/MISC/08' // Small text file
   // const HOME = 'gopher://gopher.quux.org:70/0/Government/USA/Microsoft/ntscpmcrsft12202cmp.txt' // Large text file with some broken encoding characters
@@ -439,7 +470,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // const HOME = 'gopher://gopher.floodgap.com:70/7/v2/vs' // Search form
   // const HOME = 'gopher://gopher.floodgap.com:70/0/ptloma' // Text file
   // const HOME = 'gopher://zaibatsu.circumlunar.space' // Contains recent content
-  const HOME = 'gopher://gopher.floodgap.com' // Default to directory
+  const HOME = 'gopher://gopher.floodgap.com' // Directory
   const gaufre = new Gaufre({
     goh: 'https://goh.commons.host:7070/?url='
   })
