@@ -190,6 +190,13 @@ gaufre-line p {
 gaufre-line a {
   text-decoration: none;
 }
+gaufre-line p + form > input[type='search'] {
+  width: 50ch;
+  padding: 4px;
+  font-size: 16px;
+  font-family: var(--font-stack-monospace);
+  -webkit-appearance: none;
+}
 gaufre-unsupported {
   display: block;
   white-space: pre;
@@ -268,6 +275,8 @@ function typeToFormat (type, fallback = 'directory') {
       return 'svg'
     case 's':
       return 'audio'
+    case '7':
+      return 'search'
     default:
       return fallback
   }
@@ -282,7 +291,7 @@ class GaufreViewport extends HTMLElement {
 
   async load ({ response, url, type, format }) {
     let renderer
-    if (format === 'directory') {
+    if (format === 'directory' || format === 'search') {
       renderer = document.createElement('gaufre-directory')
       const text = await response.text()
       for (const raw of text.split(/\r?\n/g)) {
@@ -342,7 +351,6 @@ class GaufreLine extends HTMLElement {
       console.log('Unknown format', line)
     }
     const [name, selector, host, port] = line.substr(1).split('\t')
-    const paragraph = document.createElement('p')
     this.setAttribute('format', format)
     const linkableFormats = [
       'text',
@@ -354,6 +362,7 @@ class GaufreLine extends HTMLElement {
       'audio'
     ]
     if (linkableFormats.includes(format)) {
+      const paragraph = document.createElement('p')
       const anchor = document.createElement('a')
       anchor.textContent = name
       if (format === 'hyperlink') {
@@ -365,10 +374,32 @@ class GaufreLine extends HTMLElement {
         anchor.href = `gopher://${origin}${path}`
       }
       paragraph.appendChild(anchor)
-    } else {
+      this.appendChild(paragraph)
+    } else if (format === 'search') {
+      const paragraph = document.createElement('p')
       paragraph.textContent = name
+      this.appendChild(paragraph)
+      const form = document.createElement('form')
+      form.addEventListener('submit', () => {
+        event.stopPropagation()
+        event.preventDefault()
+        const origin = port === '70' ? host : `${host}:${port}`
+        const path = (selector.length === 0 && type === '1')
+          ? '' : `/${type}${selector}`
+        const url = `gopher://${origin}${path}%09${encodeURI(input.value)}`
+        const href = window.location.origin + `/${url}`
+        window.history.pushState(null, '', href)
+        window.dispatchEvent(new PopStateEvent('popstate'))
+      })
+      const input = document.createElement('input')
+      input.setAttribute('type', 'search')
+      form.appendChild(input)
+      this.appendChild(form)
+    } else {
+      const paragraph = document.createElement('p')
+      paragraph.textContent = name
+      this.appendChild(paragraph)
     }
-    this.appendChild(paragraph)
   }
 
   get textContent () {
