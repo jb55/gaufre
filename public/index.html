@@ -175,6 +175,16 @@ gaufre-image > img {
 gaufre-image[zoomed] > img {
   width: 100%;
 }
+gaufre-html {
+  border: 0;
+  overflow: hidden;
+  padding: 0;
+}
+gaufre-html > iframe {
+  height: 100%;
+  width: 100%;
+  border: 0;
+}
 gaufre-line {
   display: block;
 }
@@ -192,8 +202,9 @@ gaufre-line a {
 }
 gaufre-line p + form > input[type='search'] {
   width: 50ch;
+  max-width: 100%;
   padding: 4px;
-  font-size: 16px;
+  font-size: inherit;
   font-family: var(--font-stack-monospace);
   -webkit-appearance: none;
 }
@@ -268,7 +279,7 @@ function typeToFormat (type, fallback = 'directory') {
     case 'g': case 'I': case 'p':
       return 'image'
     case 'h':
-      return 'hyperlink'
+      return 'html'
     case 'i':
       return 'info'
     case 'x':
@@ -305,6 +316,10 @@ class GaufreViewport extends HTMLElement {
       const text = await response.text()
       renderer = document.createElement('gaufre-text')
       renderer.textContent = text
+    } else if (format === 'html') {
+      const text = await response.text()
+      renderer = document.createElement('gaufre-html')
+      renderer.source = text
     } else if (format === 'image') {
       const blob = await response.blob()
       const url = URL.createObjectURL(blob)
@@ -357,21 +372,30 @@ class GaufreLine extends HTMLElement {
       'directory',
       'download',
       'image',
-      'hyperlink',
+      'html',
       'svg',
       'audio'
     ]
+    const origin = port === '70' ? host : `${host}:${port}`
+    const path = (selector.length === 0 && type === '1')
+      ? '' : `/${type}${selector}`
     if (linkableFormats.includes(format)) {
       const paragraph = document.createElement('p')
       const anchor = document.createElement('a')
       anchor.textContent = name
-      if (format === 'hyperlink') {
-        anchor.href = selector.replace(/^URL:/i, '')
+      const urlPrefix = /^\/?URL:/i
+      if (format === 'html' && urlPrefix.test(selector)) {
+        anchor.href = selector.replace(urlPrefix, '')
       } else {
-        const origin = port === '70' ? host : `${host}:${port}`
-        const path = (selector.length === 0 && type === '1')
-          ? '' : `/${type}${selector}`
         anchor.href = `gopher://${origin}${path}`
+      }
+      if (format === 'download') {
+        anchor.setAttribute('download', true)
+        anchor.addEventListener('click', () => {
+          event.stopPropagation()
+          event.preventDefault()
+          // const response = await fetch()
+        })
       }
       paragraph.appendChild(anchor)
       this.appendChild(paragraph)
@@ -383,9 +407,6 @@ class GaufreLine extends HTMLElement {
       form.addEventListener('submit', () => {
         event.stopPropagation()
         event.preventDefault()
-        const origin = port === '70' ? host : `${host}:${port}`
-        const path = (selector.length === 0 && type === '1')
-          ? '' : `/${type}${selector}`
         const url = `gopher://${origin}${path}%09${encodeURI(input.value)}`
         const href = window.location.origin + `/${url}`
         window.history.pushState(null, '', href)
@@ -450,6 +471,20 @@ class GaufreAudio extends HTMLElement {
 
 customElements.define('gaufre-audio', GaufreAudio)
 
+class GaufreHTML extends HTMLElement {
+  connectedCallback () {
+    if (!this.iframe) {
+      this.iframe = document.createElement('iframe')
+      this.iframe.setAttribute('sandbox', '')
+      this.iframe.setAttribute('csp', 'default-src \'none\'; style-src \'unsafe-inline\'')
+      this.iframe.srcdoc = this.source
+      this.appendChild(this.iframe)
+    }
+  }
+}
+
+customElements.define('gaufre-html', GaufreHTML)
+
 class Gaufre extends EventTarget {
   constructor (options) {
     super()
@@ -495,11 +530,11 @@ class Gaufre extends EventTarget {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Images
+  // Image
   // const HOME = 'gopher://gopher.floodgap.com/1/overbite/ss' // Screenshot gallery
   // const HOME = 'gopher://gopher.floodgap.com/1/gstats' // Statistics dashboard
   // const HOME = 'gopher://gopher.floodgap.com/1/fun' // Comics
-  // const HOME = 'https://localhost:8443/gopher://gopher.wensley.org.uk/1/graphs' // SVG charts
+  // const HOME = 'gopher://gopher.wensley.org.uk/1/graphs' // SVG charts
   // Sound
   // const HOME = 'gopher://mozz.us:7005/s/files/wololo.wav'
   // Text
@@ -509,6 +544,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // const HOME = 'gopher://gopher.floodgap.com:70/7/v2/vs' // Search form
   // const HOME = 'gopher://gopher.floodgap.com:70/0/ptloma' // Text file
   // const HOME = 'gopher://zaibatsu.circumlunar.space' // Contains recent content
+  // Download
+  // const HOME = 'gopher://gopher.floodgap.com/1/overbite/files'
+  // HTML
+  // const HOME = 'gopher://kamalatta.ddnss.de/1/doc/HTML'
   const HOME = 'gopher://gopher.floodgap.com' // Directory
   const gaufre = new Gaufre({
     goh: 'https://goh.commons.host:7070/?url='
