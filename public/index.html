@@ -252,7 +252,7 @@ main > footer a {
 <main hidden>
   <header>
     <form id="location">
-      <input id="url" value="">
+      <input id="url" value="" placeholder="Search or enter a Gopher URL">
     </form>
     <div id="progress">Loading activity indicator</div>
   </header>
@@ -462,6 +462,7 @@ class GaufreLine extends HTMLElement {
       })
       const input = document.createElement('input')
       input.setAttribute('type', 'search')
+      input.setAttribute('placeholder', name)
       form.appendChild(input)
       this.appendChild(form)
     } else {
