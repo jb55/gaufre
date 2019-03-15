@@ -344,7 +344,7 @@ class GaufreViewport extends HTMLElement {
     } else if (format === 'svg') {
       const text = await response.text()
       renderer = document.createElement('gaufre-image')
-      renderer.setAttribute('url', 'data:image/svg+xml;base64,' + btoa(text))
+      renderer.setAttribute('src', 'data:image/svg+xml;base64,' + btoa(text))
     } else if (format === 'audio') {
       const mime = 'audio/wav' // Safari needs this, Chrome ignores it (AFAIK?)
       const blob = new Blob([await response.blob()], { type: mime })
