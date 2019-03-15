@@ -304,7 +304,7 @@ function parseLine (line) {
   const origin = port === '70' ? host : `${host}:${port}`
   const path = (selector.length === 0 && type === '1')
     ? '' : `/${type}${selector}`
-  return [type, name, selector, host, port, origin, path]
+  return { type, name, selector, host, port, origin, path }
 }
 
 class GaufreViewport extends HTMLElement {
@@ -376,7 +376,7 @@ customElements.define('gaufre-viewport', GaufreViewport)
 
 class GaufreLine extends HTMLElement {
   set textContent (line) {
-    const [type, name, selector, origin, path] = parseLine(line)
+    const { type, name, selector, origin, path } = parseLine(line)
     this._textContent = line
     const format = typeToFormat(type, 'unknown')
     if (format === 'unknown') {
@@ -408,7 +408,12 @@ class GaufreLine extends HTMLElement {
       if (format === 'download') {
         const filename = path.replace(/^...*?([^/]+)$/, '$1') || name
         anchor.setAttribute('download', filename)
-        anchor.href = goh + anchor.href + '&download'
+        anchor.addEventListener('click', () => {
+          event.stopPropagation()
+          event.preventDefault()
+          const detail = { href: anchor.href, filename }
+          document.dispatchEvent(new CustomEvent('download', { detail }))
+        })
       }
       paragraph.appendChild(anchor)
       this.appendChild(paragraph)
@@ -503,10 +508,16 @@ class GaufreDownload extends HTMLElement {
     if (!this.anchor) {
       this.anchor = document.createElement('a')
       this.anchor.textContent = url
-      this.anchor.href = goh + url + '&download'
+      this.anchor.href = url
       const path = new URL(url).pathname
       const filename = path.replace(/^...*?([^/]+)$/, '$1')
       this.anchor.setAttribute('download', filename)
+      this.anchor.addEventListener('click', () => {
+        event.stopPropagation()
+        event.preventDefault()
+        const detail = { href: this.anchor.href, filename }
+        document.dispatchEvent(new CustomEvent('download', { detail }))
+      })
       this.appendChild(this.anchor)
     }
   }
@@ -621,6 +632,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   gaufre.addEventListener('end', ({ detail: { url, endpoint } }) => {
     document.getElementById('progress')
       .classList.remove('active')
+  })
+
+  document.addEventListener('download', async ({ detail }) => {
+    const url = goh + detail.href
+    const response = await fetch(url, {
+      headers: { accept: 'application/gopher' }
+    })
+    const blob = await response.blob()
+    const download = document.createElement('a')
+    download.href = URL.createObjectURL(blob)
+    download.setAttribute('download', detail.filename)
+    download.click()
+    setTimeout(() => URL.revokeObjectURL(download.href), 1e6)
   })
 
   document.addEventListener('click', (event) => {
