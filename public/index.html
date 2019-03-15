@@ -291,6 +291,8 @@ function typeToFormat (type, fallback = 'directory') {
       return 'svg'
     case 's':
       return 'audio'
+    case ';':
+      return 'video'
     case '7':
       return 'search'
     default:
@@ -348,6 +350,12 @@ class GaufreViewport extends HTMLElement {
       const blob = new Blob([await response.blob()], { type: mime })
       renderer = document.createElement('gaufre-audio')
       renderer.srcObject = blob
+    } else if (format === 'video') {
+      const mime = 'video/mp4'
+      // const blob = await response.blob()
+      const blob = new Blob([await response.blob()], { type: mime })
+      renderer = document.createElement('gaufre-video')
+      renderer.srcObject = blob
     } else if (format === 'download') {
       renderer = document.createElement('gaufre-download')
       renderer.textContent = url
@@ -376,11 +384,16 @@ customElements.define('gaufre-viewport', GaufreViewport)
 
 class GaufreLine extends HTMLElement {
   set textContent (line) {
-    const { type, name, selector, origin, path } = parseLine(line)
+    let type, name, selector, origin, path
+    try {
+      ({ type, name, selector, origin, path } = parseLine(line))
+    } catch (error) {
+      console.error(error.message)
+    }
     this._textContent = line
     const format = typeToFormat(type, 'unknown')
     if (format === 'unknown') {
-      console.log('Unknown format', line)
+      console.warn('Unknown format', line)
     }
     this.setAttribute('format', format)
     const linkableFormats = [
@@ -391,7 +404,8 @@ class GaufreLine extends HTMLElement {
       'html',
       'svg',
       'telnet',
-      'audio'
+      'audio',
+      'video'
     ]
     if (linkableFormats.includes(format)) {
       const paragraph = document.createElement('p')
@@ -436,7 +450,7 @@ class GaufreLine extends HTMLElement {
       this.appendChild(form)
     } else {
       const paragraph = document.createElement('p')
-      paragraph.textContent = name
+      paragraph.textContent = name || line
       this.appendChild(paragraph)
     }
   }
@@ -488,6 +502,22 @@ class GaufreAudio extends HTMLElement {
 }
 
 customElements.define('gaufre-audio', GaufreAudio)
+
+class GaufreVideo extends HTMLElement {
+  connectedCallback () {
+    if (!this.embed) {
+      this.embed = document.createElement('video')
+      this.embed.setAttribute('controls', true)
+      this.embed.setAttribute('volume', true)
+      // this.embed.srcObject = this.srcObject
+      const url = URL.createObjectURL(this.srcObject)
+      this.embed.src = url
+      this.appendChild(this.embed)
+    }
+  }
+}
+
+customElements.define('gaufre-video', GaufreVideo)
 
 class GaufreHTML extends HTMLElement {
   connectedCallback () {
@@ -595,6 +625,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // const HOME = 'gopher://kamalatta.ddnss.de/1/doc/HTML'
   // Telnet
   // const HOME = 'gopher://bitreich.org'
+  // Video
+  // const HOME = 'gopher://pogemon.pw/1videos'
   // Directory
   const HOME = 'gopher://gopher.floodgap.com' // Default home
   const goh = 'https://goh.commons.host:7070/?url='
@@ -608,7 +640,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (url.length && !url.startsWith('gopher://')) {
         url = `gopher://${url}`
       }
-      const href = window.location.origin + '/' + encodeURI(url)
+      const href = window.location.origin + '/' + url
       if (location.href !== href) {
         window.history.pushState(null, '', href)
       }
