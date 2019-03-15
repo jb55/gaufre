@@ -279,6 +279,8 @@ function typeToFormat (type, fallback = 'directory') {
       return 'directory'
     case '4': case '5': case '6': case '9': case 'd':
       return 'download'
+    case '8': case 'T':
+      return 'telnet'
     case 'g': case 'I': case 'p':
       return 'image'
     case 'h':
@@ -374,7 +376,7 @@ customElements.define('gaufre-viewport', GaufreViewport)
 
 class GaufreLine extends HTMLElement {
   set textContent (line) {
-    const [type, name, selector, host, port, origin, path] = parseLine(line)
+    const [type, name, selector, origin, path] = parseLine(line)
     this._textContent = line
     const format = typeToFormat(type, 'unknown')
     if (format === 'unknown') {
@@ -388,6 +390,7 @@ class GaufreLine extends HTMLElement {
       'image',
       'html',
       'svg',
+      'telnet',
       'audio'
     ]
     if (linkableFormats.includes(format)) {
@@ -397,6 +400,8 @@ class GaufreLine extends HTMLElement {
       const urlPrefix = /^\/?URL:/i
       if (format === 'html' && urlPrefix.test(selector)) {
         anchor.href = selector.replace(urlPrefix, '')
+      } else if (format === 'telnet') {
+        anchor.href = `telnet://${origin}`
       } else {
         anchor.href = `gopher://${origin}${path}`
       }
@@ -502,9 +507,6 @@ class GaufreDownload extends HTMLElement {
       const path = new URL(url).pathname
       const filename = path.replace(/^...*?([^/]+)$/, '$1')
       this.anchor.setAttribute('download', filename)
-      this.anchor.addEventListener('click', () => {
-        event.stopPropagation()
-      })
       this.appendChild(this.anchor)
     }
   }
@@ -582,6 +584,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // const HOME = 'gopher://gopher.floodgap.com/1/overbite/files'
   // HTML
   // const HOME = 'gopher://kamalatta.ddnss.de/1/doc/HTML'
+  // Telnet
+  // const HOME = 'gopher://bitreich.org'
   // Directory
   const HOME = 'gopher://gopher.floodgap.com' // Default home
   const gaufre = new Gaufre({ goh })
