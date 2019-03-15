@@ -71,11 +71,10 @@ main > header {
   display: flex;
   flex-direction: row;
   background-color: black;
+  justify-content: stretch;
+  align-items: stretch;
 }
 main > header > #location {
-  width: 100%;
-  height: 100%;
-  display: grid;
   flex: auto;
 }
 main > header > #location > #url {
@@ -90,6 +89,8 @@ main > header > #location > #url {
   background-color: white;
   font-size: 16px;
   font-family: var(--font-stack-monospace);
+  width: 100%;
+  height: 100%;
 }
 main > header > #progress {
   background: none;
