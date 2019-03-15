@@ -185,6 +185,16 @@ gaufre-html > iframe {
   width: 100%;
   border: 0;
 }
+gaufre-pdf {
+  border: 0;
+  overflow: hidden;
+  padding: 0;
+}
+gaufre-pdf > iframe {
+  height: 100%;
+  width: 100%;
+  border: 0;
+}
 gaufre-line {
   display: block;
 }
@@ -291,6 +301,8 @@ function typeToFormat (type, fallback = 'directory') {
       return 'svg'
     case 's':
       return 'audio'
+    case 'P':
+      return 'pdf'
     case ';':
       return 'video'
     case '7':
@@ -346,16 +358,20 @@ class GaufreViewport extends HTMLElement {
       renderer = document.createElement('gaufre-image')
       renderer.setAttribute('src', 'data:image/svg+xml;base64,' + btoa(text))
     } else if (format === 'audio') {
-      const mime = 'audio/wav' // Safari needs this, Chrome ignores it (AFAIK?)
+      const mime = 'audio/wav'
       const blob = new Blob([await response.blob()], { type: mime })
       renderer = document.createElement('gaufre-audio')
       renderer.srcObject = blob
     } else if (format === 'video') {
       const mime = 'video/mp4'
-      // const blob = await response.blob()
       const blob = new Blob([await response.blob()], { type: mime })
       renderer = document.createElement('gaufre-video')
       renderer.srcObject = blob
+    } else if (format === 'pdf') {
+      const mime = 'application/pdf'
+      const blob = new Blob([await response.blob()], { type: mime })
+      renderer = document.createElement('gaufre-pdf')
+      renderer.src = URL.createObjectURL(blob)
     } else if (format === 'download') {
       renderer = document.createElement('gaufre-download')
       renderer.textContent = url
@@ -405,6 +421,7 @@ class GaufreLine extends HTMLElement {
       'svg',
       'telnet',
       'audio',
+      'pdf',
       'video'
     ]
     if (linkableFormats.includes(format)) {
@@ -524,7 +541,11 @@ class GaufreHTML extends HTMLElement {
     if (!this.iframe) {
       this.iframe = document.createElement('iframe')
       this.iframe.setAttribute('sandbox', '')
-      this.iframe.setAttribute('csp', 'default-src \'none\'; style-src \'unsafe-inline\'')
+      const csp = [
+        'default-src \'none\'',
+        'style-src \'unsafe-inline\''
+      ].join('; ')
+      this.iframe.setAttribute('csp', csp)
       this.iframe.srcdoc = this.source
       this.appendChild(this.iframe)
     }
@@ -532,6 +553,24 @@ class GaufreHTML extends HTMLElement {
 }
 
 customElements.define('gaufre-html', GaufreHTML)
+
+class GaufrePDF extends HTMLElement {
+  connectedCallback () {
+    if (!this.iframe) {
+      this.iframe = document.createElement('iframe')
+      const csp = [
+        'default-src \'none\'',
+        'style-src \'unsafe-inline\'',
+        'object-src blob:'
+      ].join('; ')
+      this.iframe.setAttribute('csp', csp)
+      this.iframe.src = this.src
+      this.appendChild(this.iframe)
+    }
+  }
+}
+
+customElements.define('gaufre-pdf', GaufrePDF)
 
 class GaufreDownload extends HTMLElement {
   set textContent (url) {
