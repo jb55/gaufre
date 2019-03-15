@@ -124,7 +124,6 @@ main > article {
   overflow: hidden;
   line-height: 1.25em;
   font-size: 16px;
-  height: 100%;
   display: flex;
 }
 @media (max-width: 700px) {
@@ -644,6 +643,7 @@ class Gaufre extends EventTarget {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const SEARCH = 'gopher://gopher.floodgap.com/7/v2/vs'
   const HOME = 'gopher://gopher.floodgap.com'
   const goh = 'https://goh.commons.host:7070/?url='
   const gaufre = new Gaufre({ goh })
@@ -654,7 +654,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       event.preventDefault()
       let url = document.getElementById('url').value
       if (url.length && !url.startsWith('gopher://')) {
-        url = `gopher://${url}`
+        if (!url.includes('.') || url.includes(' ')) {
+          url = `${SEARCH}%09${url}`
+        } else {
+          url = `gopher://${url}`
+        }
       }
       const href = window.location.origin + '/' + url
       if (location.href !== href) {
