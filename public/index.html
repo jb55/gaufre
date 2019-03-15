@@ -82,6 +82,7 @@ main > header > #location > #url {
   -webkit-appearance: none;
   align-self: stretch;
   justify-self: stretch;
+  text-align: center;
   margin: 0;
   padding: 0 5px;
   border: 5px solid black;
@@ -141,17 +142,13 @@ main > article {
 gaufre-viewport {
   display: flex;
   flex: auto;
-  overflow: hidden;
-}
-gaufre-viewport > * {
   overflow: auto;
   -webkit-overflow-scrolling: touch;
-  box-sizing: border-box;
-  padding: 0.5em;
-  height: 100%;
+  justify-content: center;
   max-height: 100%;
-  width: 100%;
-  flex: auto;
+}
+gaufre-viewport > * {
+  padding: 0.5em;
 }
 gaufre-directory {
   display: block;
@@ -180,6 +177,7 @@ gaufre-html {
   border: 0;
   overflow: hidden;
   padding: 0;
+  width: 100%;
 }
 gaufre-html > iframe {
   height: 100%;
@@ -190,6 +188,7 @@ gaufre-pdf {
   border: 0;
   overflow: hidden;
   padding: 0;
+  width: 100%;
 }
 gaufre-pdf > iframe {
   height: 100%;
@@ -746,7 +745,7 @@ i+ Interesting Gopher Links\t\t\t
 i\t\t\t
 1  Floodgap    - Community pages & info\t\tgopher.floodgap.com\t70
 1  Hacker News - Tech news and discussion\t\thngopher.com\t70
-1  Gopherverse - All known Gopher servers\t/1/world\tgopher.floodgap.com\t70
+1  Gopherverse - All known Gopher servers\t/world\tgopher.floodgap.com\t70
 i\t\t\t
 i+ About\t\t\t
 i\t\t\t
