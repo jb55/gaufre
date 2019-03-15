@@ -85,7 +85,6 @@ main > header > #location > #url {
   margin: 0;
   padding: 0 5px;
   border: 5px solid black;
-  text-align: center;
   background-color: white;
   font-size: 16px;
   font-family: var(--font-stack-monospace);
@@ -232,7 +231,10 @@ gaufre-download {
 <main hidden>
   <header>
     <form id="location">
-      <input id="url" value="" name="url" type="search" mozactionhint="go" enterkeyhint="go" placeholder="Search or enter a Gopher URL">
+      <input id="url" value="" name="url"
+        type="search"
+        mozactionhint="go" enterkeyhint="go"
+        placeholder="Search or enter URL">
     </form>
     <div id="progress">Loading activity indicator</div>
   </header>
@@ -625,7 +627,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       event.stopPropagation()
       event.preventDefault()
       let url = document.getElementById('url').value
-      if (url.length && !url.startsWith('gopher://')) {
+      if (/^https?:\/\/.+/.test(url)) {
+        location = url
+        return
+      }
+      else if (url.length && !url.startsWith('gopher://')) {
         if (!url.includes('.') || url.includes(' ')) {
           url = `${SEARCH}%09${url}`
         } else {
