@@ -574,8 +574,6 @@ class Gaufre extends EventTarget {
   }
 }
 
-const goh = 'https://goh.commons.host:7070/?url='
-
 document.addEventListener('DOMContentLoaded', async () => {
   // Image
   // const HOME = 'gopher://gopher.floodgap.com/1/overbite/ss' // Screenshot gallery
@@ -599,6 +597,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // const HOME = 'gopher://bitreich.org'
   // Directory
   const HOME = 'gopher://gopher.floodgap.com' // Default home
+  const goh = 'https://goh.commons.host:7070/?url='
   const gaufre = new Gaufre({ goh })
 
   document.getElementById('location')
