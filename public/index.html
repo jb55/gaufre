@@ -287,7 +287,7 @@ function typeToFormat (type, fallback = 'directory') {
       return 'error'
     case '1':
       return 'directory'
-    case '4': case '5': case '6': case '9': case 'd': case 'D':
+    case '4': case '5': case '6': case '9': case 'D':
       return 'download'
     case '8': case 'T':
       return 'telnet'
@@ -301,7 +301,7 @@ function typeToFormat (type, fallback = 'directory') {
       return 'svg'
     case 's':
       return 'audio'
-    case 'P':
+    case 'P': case 'd':
       return 'pdf'
     case ';':
       return 'video'
