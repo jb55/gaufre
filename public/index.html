@@ -79,6 +79,8 @@ main > header > #location {
   flex: auto;
 }
 main > header > #location > #url {
+  appearance: none;
+  -webkit-appearance: none;
   align-self: stretch;
   justify-self: stretch;
   margin: 0;
@@ -101,7 +103,7 @@ main > header > #progress {
   flex: none;
 }
 main > header > #progress:before {
-  content: '🐹';
+  content: '🐑';
   font-size: 40px;
 }
 main > header > #progress.active {
@@ -225,46 +227,17 @@ gaufre-unsupported {
 gaufre-download {
   font-family: var(--font-stack-monospace);
 }
-main > footer {
-  height: 50px;
-  flex: none;
-  background-color: black;
-  color: white;
-  text-align: center;
-  font-size: 16px;
-  font-family: var(--font-stack-monospace);
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-main > footer p {
-  line-height: 1.25;
-  display: inline;
-}
-main > footer span {
-  white-space: nowrap;
-}
-main > footer a {
-  color: white;
-}
 </style>
 <main hidden>
   <header>
     <form id="location">
-      <input id="url" value="" placeholder="Search or enter a Gopher URL">
+      <input id="url" value="" name="url" type="search" mozactionhint="go" enterkeyhint="go" placeholder="Search or enter a Gopher URL">
     </form>
     <div id="progress">Loading activity indicator</div>
   </header>
   <article>
     <gaufre-viewport></gaufre-viewport>
   </article>
-  <footer>
-    <p>
-      <span id="goh"><a href="https://www.npmjs.com/package/goh">Gopher-over-HTTPS</a></span>
-      <span id="commonshost">powered by 🐑 <a href="https://commons.host">Commons Host</a></span>
-    </p>
-  </footer>
 </main>
 
 <!-- <script src="https://unpkg.com/@ungap/event-target"></script> -->
@@ -349,9 +322,8 @@ class GaufreViewport extends HTMLElement {
       renderer.source = text
     } else if (format === 'image') {
       const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
       renderer = document.createElement('gaufre-image')
-      renderer.setAttribute('src', url)
+      renderer.setAttribute('src', URL.createObjectURL(blob))
     } else if (format === 'svg') {
       const text = await response.text()
       renderer = document.createElement('gaufre-image')
@@ -603,7 +575,6 @@ class Gaufre extends EventTarget {
 
   async navigate (url) {
     const matches = this.gopherTypeRegex.exec(url)
-    if (!matches) return
     const type = matches[1] || '1'
     const format = typeToFormat(type)
     const endpoint = this.options.goh + encodeURIComponent(url)
@@ -645,7 +616,6 @@ class Gaufre extends EventTarget {
 
 document.addEventListener('DOMContentLoaded', async () => {
   const SEARCH = 'gopher://gopher.floodgap.com/7/v2/vs'
-  const HOME = 'gopher://gopher.floodgap.com'
   const goh = 'https://goh.commons.host:7070/?url='
   const gaufre = new Gaufre({ goh })
 
@@ -724,10 +694,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     const path = decodeURI(url.href.substr(url.origin.length + 1))
     const squashedGopherUrl = /^gopher:\/[^/]/
     let gopherUrl
-    if (path.startsWith('gopher://')) {
+    if (path === '') {
+      document.title = title
+      document.querySelector('gaufre-viewport').load({
+        format: 'directory',
+        type: '1',
+        response: {
+          text: () => HOME
+        }
+      })
+      document.querySelector('main > article').scrollTop = 0
+      return
+    } else if (path.startsWith('gopher://')) {
       gopherUrl = path
-    } else if (path === '') {
-      gopherUrl = HOME
     } else if (squashedGopherUrl.text(path)) {
       const doubleSlash = '/' + path.replace(squashedGopherUrl, 'gopher://')
       window.history.replaceState(null, '', doubleSlash)
@@ -745,6 +724,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     .removeAttribute('hidden')
   router(location)
 })
+
+const HOME = `
+i  ___                             _  _        _   \t\t\t
+i / __|___ _ __  _ __  ___ _ _ ___| || |___ __| |_ \t\t\t
+i| (__/ _ \\ '  \\| '  \\/ _ \\ ' \(_-<| __ / _ (_-<  _|\t\t\t
+i \\___\\___/_|_|_|_|_|_\\___/_|_/__/|_||_\\___/__/\\__|\t\t\t
+i\t\t\t
+i                🐑 Commons Host\t\t\t
+i\t\t\t
+i  The collaborative CDN for WWW, DNS, and Gopher.\t\t\t
+i\t\t\t
+i+ Interesting Gopher Links\t\t\t
+i\t\t\t
+1  Floodgap    - Community pages & info\t\tgopher.floodgap.com\t70
+1  Hacker News - Tech news and discussion\t\thngopher.com\t70
+1  Gopherverse - All known Gopher servers\t/1/world\tgopher.floodgap.com\t70
+i\t\t\t
+i+ About\t\t\t
+i\t\t\t
+iThis is a Gopher browser in your web browser.\t\t\t
+i\t\t\t
+iGopher is a humble protocol, unchanged since '90s.\t\t\t
+iEnjoy the simplicity of text content. But it also \t\t\t
+isupports images, audio, video, PDF, and even HTML.\t\t\t
+i\t\t\t
+iThe Commons Host edge network provides a global, \t\t\t
+ilow-latency, public Gopher-over-HTTP service.\t\t\t
+iGoH is a transport, not a translator. So this \t\t\t
+isingle-page app speaks pure, original Gopher.\t\t\t
+i\t\t\t
+i+ Web Links\t\t\t
+i\t\t\t
+h  Homepage    - Free and open source CDN\tURL:https://commons.host\t\t
+h  Contact     - @commonshost on Twitter\tURL:https://twitter.com/commonshost\t\t
+h  Source code - Protocol, servers, clients\tURL:https://www.npmjs.com/package/goh\t\t
+`
 </script>
 </body>
 </html>
