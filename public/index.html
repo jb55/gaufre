@@ -213,6 +213,9 @@ gaufre-unsupported {
   white-space: pre;
   font-family: var(--font-stack-monospace);
 }
+gaufre-download {
+  font-family: var(--font-stack-monospace);
+}
 main > footer {
   height: 50px;
   flex: none;
@@ -274,7 +277,7 @@ function typeToFormat (type, fallback = 'directory') {
       return 'error'
     case '1':
       return 'directory'
-    case '4': case '5': case '6': case '9':
+    case '4': case '5': case '6': case '9': case 'd':
       return 'download'
     case 'g': case 'I': case 'p':
       return 'image'
@@ -291,6 +294,15 @@ function typeToFormat (type, fallback = 'directory') {
     default:
       return fallback
   }
+}
+
+function parseLine (line) {
+  const type = line.charAt(0)
+  const [name, selector, host, port] = line.substr(1).split('\t')
+  const origin = port === '70' ? host : `${host}:${port}`
+  const path = (selector.length === 0 && type === '1')
+    ? '' : `/${type}${selector}`
+  return [type, name, selector, host, port, origin, path]
 }
 
 class GaufreViewport extends HTMLElement {
@@ -334,6 +346,9 @@ class GaufreViewport extends HTMLElement {
       const blob = new Blob([await response.blob()], { type: mime })
       renderer = document.createElement('gaufre-audio')
       renderer.srcObject = blob
+    } else if (format === 'download') {
+      renderer = document.createElement('gaufre-download')
+      renderer.textContent = url
     } else if (format === 'error') {
       const text = await response.text()
       renderer = document.createElement('gaufre-line')
@@ -359,13 +374,12 @@ customElements.define('gaufre-viewport', GaufreViewport)
 
 class GaufreLine extends HTMLElement {
   set textContent (line) {
+    const [type, name, selector, host, port, origin, path] = parseLine(line)
     this._textContent = line
-    const type = line.charAt(0)
     const format = typeToFormat(type, 'unknown')
     if (format === 'unknown') {
       console.log('Unknown format', line)
     }
-    const [name, selector, host, port] = line.substr(1).split('\t')
     this.setAttribute('format', format)
     const linkableFormats = [
       'text',
@@ -376,9 +390,6 @@ class GaufreLine extends HTMLElement {
       'svg',
       'audio'
     ]
-    const origin = port === '70' ? host : `${host}:${port}`
-    const path = (selector.length === 0 && type === '1')
-      ? '' : `/${type}${selector}`
     if (linkableFormats.includes(format)) {
       const paragraph = document.createElement('p')
       const anchor = document.createElement('a')
@@ -390,12 +401,9 @@ class GaufreLine extends HTMLElement {
         anchor.href = `gopher://${origin}${path}`
       }
       if (format === 'download') {
-        anchor.setAttribute('download', true)
-        anchor.addEventListener('click', () => {
-          event.stopPropagation()
-          event.preventDefault()
-          // const response = await fetch()
-        })
+        const filename = path.replace(/^...*?([^/]+)$/, '$1') || name
+        anchor.setAttribute('download', filename)
+        anchor.href = goh + anchor.href + '&download'
       }
       paragraph.appendChild(anchor)
       this.appendChild(paragraph)
@@ -485,6 +493,25 @@ class GaufreHTML extends HTMLElement {
 
 customElements.define('gaufre-html', GaufreHTML)
 
+class GaufreDownload extends HTMLElement {
+  set textContent (url) {
+    if (!this.anchor) {
+      this.anchor = document.createElement('a')
+      this.anchor.textContent = url
+      this.anchor.href = goh + url + '&download'
+      const path = new URL(url).pathname
+      const filename = path.replace(/^...*?([^/]+)$/, '$1')
+      this.anchor.setAttribute('download', filename)
+      this.anchor.addEventListener('click', () => {
+        event.stopPropagation()
+      })
+      this.appendChild(this.anchor)
+    }
+  }
+}
+
+customElements.define('gaufre-download', GaufreDownload)
+
 class Gaufre extends EventTarget {
   constructor (options) {
     super()
@@ -498,6 +525,11 @@ class Gaufre extends EventTarget {
     const type = matches[1] || '1'
     const format = typeToFormat(type)
     const endpoint = this.options.goh + encodeURIComponent(url)
+    if (format === 'download') {
+      const detail = { url, type, format }
+      this.dispatchEvent(new CustomEvent('response', { detail }))
+      return
+    }
     this.dispatchEvent(
       new CustomEvent('start', { detail: { url, endpoint } })
     )
@@ -529,6 +561,8 @@ class Gaufre extends EventTarget {
   }
 }
 
+const goh = 'https://goh.commons.host:7070/?url='
+
 document.addEventListener('DOMContentLoaded', async () => {
   // Image
   // const HOME = 'gopher://gopher.floodgap.com/1/overbite/ss' // Screenshot gallery
@@ -548,10 +582,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // const HOME = 'gopher://gopher.floodgap.com/1/overbite/files'
   // HTML
   // const HOME = 'gopher://kamalatta.ddnss.de/1/doc/HTML'
-  const HOME = 'gopher://gopher.floodgap.com' // Directory
-  const gaufre = new Gaufre({
-    goh: 'https://goh.commons.host:7070/?url='
-  })
+  // Directory
+  const HOME = 'gopher://gopher.floodgap.com' // Default home
+  const gaufre = new Gaufre({ goh })
 
   document.getElementById('location')
     .addEventListener('submit', (event) => {
