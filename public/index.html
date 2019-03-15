@@ -57,12 +57,35 @@
     monospace;
 }
 
+:host,
+:root {
+  --filter-invert: 0;
+  --color-foreground: black;
+  --color-background: white;
+  --color-error: red;
+  --color-anchor: blue;
+  --color-anchor-active: red;
+  --color-anchor-visited: purple;
+}
+@media (prefers-color-scheme: dark) {
+  :host,
+  :root {
+    --filter-invert: 1;
+    --color-foreground: white;
+    --color-background: black;
+    --color-error: #00ffff;
+    --color-anchor: #ffff00;
+    --color-anchor-active: #ff0000;
+    --color-anchor-visited: #7fff7f;
+  }
+}
+
 :root, html, body {
   margin: 0;
   height: 100%;
   width: 100%;
   -webkit-text-size-adjust: 100%;
-  background: black;
+  background: var(--color-background);
 }
 main {
   height: 100%;
@@ -75,7 +98,7 @@ main > #location {
   flex: none;
   display: flex;
   flex-direction: row;
-  background-color: black;
+  background-color: var(--color-foreground);
   justify-content: stretch;
   align-items: stretch;
 }
@@ -87,8 +110,9 @@ main > #location > #url {
   text-align: center;
   margin: 0;
   padding: 0 5px;
-  border: 5px solid black;
-  background-color: white;
+  border: 5px solid var(--color-foreground);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
   font-size: 16px;
   font-family: var(--font-stack-monospace);
   width: 100%;
@@ -108,6 +132,7 @@ main > #location > #progress {
 main > #location > #progress:before {
   content: '🐑';
   font-size: 40px;
+  filter: invert(var(--filter-invert));
 }
 main > #location > #progress.active {
   animation-name: spinner;
@@ -125,7 +150,8 @@ main > #location > #progress.active {
   }
 }
 main > article {
-  background: white;
+  background: var(--color-background);
+  color: var(--color-foreground);
   flex: auto;
   overflow: hidden;
   display: flex;
@@ -139,7 +165,7 @@ gaufre-viewport {
   -webkit-overflow-scrolling: touch;
 }
 gaufre-viewport > * {
-  padding: 0.5em;
+  padding: 1.25em 0.5em;
   display: inline-block;
   text-align: left;
   font-size: 16px;
@@ -211,7 +237,7 @@ gaufre-line {
   display: block;
 }
 gaufre-line[format='error'] {
-  color: red;
+  color: var(--color-error);
 }
 gaufre-line p {
   white-space: pre;
@@ -221,6 +247,13 @@ gaufre-line p {
 }
 gaufre-line a {
   text-decoration: none;
+  color: var(--color-anchor);
+}
+gaufre-line a:active {
+  color: var(--color-anchor-active);
+}
+gaufre-line a:visited {
+  color: var(--color-anchor-visited);
 }
 gaufre-line p + form > input[type='search'] {
   width: 50ch;
@@ -229,6 +262,8 @@ gaufre-line p + form > input[type='search'] {
   font-size: 16px;
   font-family: var(--font-stack-monospace);
   -webkit-appearance: none;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
 }
 gaufre-unsupported {
   display: block;
