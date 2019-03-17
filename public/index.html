@@ -695,11 +695,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   })
   gaufre.addEventListener('error', async ({ detail }) => {
     await document.querySelector('gaufre-viewport').error(detail)
-    document.querySelector('main > article').scrollTop = 0
+    document.querySelector('gaufre-viewport').scrollTop = 0
   })
   gaufre.addEventListener('response', async ({ detail }) => {
     await document.querySelector('gaufre-viewport').load(detail)
-    document.querySelector('main > article').scrollTop = 0
+    document.querySelector('gaufre-viewport').scrollTop = 0
   })
   gaufre.addEventListener('end', ({ detail: { url, endpoint } }) => {
     document.getElementById('progress')
@@ -753,7 +753,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           text: () => HOME
         }
       })
-      document.querySelector('main > article').scrollTop = 0
+      document.querySelector('gaufre-viewport').scrollTop = 0
       return
     } else if (path.startsWith('gopher://')) {
       gopherUrl = path
