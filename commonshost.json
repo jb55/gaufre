@@ -1,5 +1,11 @@
 {
   "hosts": [{
-    "fallback": { "200": "./index.html" }
+    "directories": {
+      "resolve": false
+    },
+    "fallback": {
+      "200": "./index.html",
+      "extensions": []
+    }
   }]
 }
