@@ -364,7 +364,7 @@ class GaufreViewport extends HTMLElement {
     } else if (format === 'text' || format === 'info') {
       const text = await response.text()
       renderer = document.createElement('gaufre-text')
-      renderer.textContent = text
+      renderer.textContent = text.replace(/^\.\./g, '.')
     } else if (format === 'html') {
       const text = await response.text()
       renderer = document.createElement('gaufre-html')
