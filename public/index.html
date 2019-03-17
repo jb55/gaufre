@@ -188,13 +188,11 @@ gaufre-viewport > * {
   }
 }
 gaufre-text {
-  display: block;
   white-space: pre;
   font-family: var(--font-stack-monospace);
 }
 gaufre-error {
   color: red;
-  display: block;
   white-space: pre;
   font-family: var(--font-stack-monospace);
 }
@@ -395,8 +393,8 @@ class GaufreViewport extends HTMLElement {
       renderer.textContent = url
     } else if (format === 'error') {
       const text = await response.text()
-      renderer = document.createElement('gaufre-line')
-      renderer.textContent = text
+      this.error({ message: text })
+      return
     } else {
       renderer = document.createElement('gaufre-unsupported')
       renderer.textContent = 'Format not supported'
