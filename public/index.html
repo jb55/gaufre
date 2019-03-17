@@ -756,6 +756,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       })
       document.querySelector('gaufre-viewport').scrollTop = 0
+      document.getElementById('url').value = ''
       return
     } else if (path.startsWith('gopher://')) {
       gopherUrl = path
