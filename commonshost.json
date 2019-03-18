@@ -3,6 +3,9 @@
     "directories": {
       "resolve": false
     },
+    "accessControl": {
+      "allowOrigin": "*"
+    },
     "fallback": {
       "200": "./index.html",
       "extensions": []
