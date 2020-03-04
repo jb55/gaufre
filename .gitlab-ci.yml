@@ -4,6 +4,6 @@ node.js:
     NPM_CONFIG_LOGLEVEL: warn
   cache:
     paths:
-      - node_modules
+    - node_modules
   script:
-    - npm it
+  - npm it
