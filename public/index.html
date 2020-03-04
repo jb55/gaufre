@@ -175,16 +175,10 @@
       gaufre-viewport > * {
         font-size: 14px;
       }
-      gaufre-viewport input[type='search'] {
-        max-width: calc(100vw - 30px) !important;
-      }
     }
     @media (max-width: 600px) {
       gaufre-viewport > * {
         font-size: 12px;
-      }
-      gaufre-viewport input[type='search'] {
-        max-width: calc(100vw - 30px) !important;
       }
     }
     gaufre-text {
@@ -251,11 +245,25 @@
     gaufre-line a:visited {
       color: var(--color-anchor-visited);
     }
-    gaufre-line p + form > input[type='search'] {
-      width: 50ch;
-      max-width: 100%;
-      padding: 4px;
-      font-size: 16px;
+    gaufre-line form {
+      max-width: calc(100vw - 1em);
+      display: flex;
+      margin: .5em 0;
+    }
+    gaufre-line form > input[type='search'] {
+      flex: 1 1 auto;
+      padding: .25em;
+      margin-right: .25em;
+      font-size: 1em;
+      font-family: var(--font-stack-monospace);
+      -webkit-appearance: none;
+      background-color: var(--color-background);
+      color: var(--color-foreground);
+    }
+    gaufre-line form > input[type='submit'] {
+      flex: none;
+      padding: .25em;
+      font-size: 1em;
       font-family: var(--font-stack-monospace);
       -webkit-appearance: none;
       background-color: var(--color-background);
@@ -469,9 +477,6 @@ class GaufreLine extends HTMLElement {
       paragraph.appendChild(anchor)
       this.appendChild(paragraph)
     } else if (format === 'search') {
-      const paragraph = document.createElement('p')
-      paragraph.textContent = name
-      this.appendChild(paragraph)
       const form = document.createElement('form')
       form.addEventListener('submit', () => {
         event.stopPropagation()
@@ -485,6 +490,9 @@ class GaufreLine extends HTMLElement {
       input.setAttribute('type', 'search')
       input.setAttribute('placeholder', name)
       form.appendChild(input)
+      const button = document.createElement('input')
+      button.type = 'submit'
+      form.appendChild(button)
       this.appendChild(form)
     } else {
       const paragraph = document.createElement('p')
