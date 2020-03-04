@@ -11,274 +11,274 @@
   <meta name="referrer" content="no-referrer">
 </head>
 <body>
-  <style>
-    @font-face {
-      font-family: font-stack-emoji;
-      unicode-range: U+1F300-1F5FF, U+1F600-1F64F, U+1F680-1F6FF, U+2600-26FF;
-      src: local(Segoe UI Emoji); /* Windows 8.1+ Edge fix */
-      src:
-        /* macOS, iOS */
-        local(Apple Color Emoji),
-        /* Windows 8.1+ */
-        local(Segoe UI Emoji),
-        /* Linux Firefox */
-        local(Twemoji Mozilla),
-        local(EmojiOne Mozilla),
-        /* Ubuntu Firefox */
-        local(Twitter Color Emoji),
-        /* Android */
-        local(Noto Color Emoji),
-        local(Android Emoji),
-        /* Linux */
-        local(Emoji One Color),
-        local(EmojiOne Color),
-        local(EmojiSymbols),
-        local(Symbola);
-    }
-    
-    @font-face {
-      font-family: font-stack-monospace;
-      src:
-        local(Menlo),
-        local(Monaco),
-        local(Consolas),
-        local(DejaVu Sans Mono),
-        local(Bitstream Vera Sans Mono),
-        local(Andalé Mono);
-    }
-    
-    :host,
-    :root {
-      --font-stack-monospace:
-        /* The emoji stack has issues with Safari. On macOS some line endings */
-        /* are miscalculated, making links partially unclickable. */
-        /* font-stack-emoji, */
-        font-stack-monospace,
-        monospace;
-    }
-    
-    :host,
-    :root {
-      --filter-invert: 0;
-      --color-foreground: black;
-      --color-background: white;
-      --color-error: red;
-      --color-anchor: blue;
-      --color-anchor-active: red;
-      --color-anchor-visited: purple;
-    }
-    @media (prefers-color-scheme: dark) {
-      :host,
-      :root {
-        --filter-invert: 1;
-        --color-foreground: white;
-        --color-background: black;
-        --color-error: #00ffff;
-        --color-anchor: #ffff00;
-        --color-anchor-active: #ff0000;
-        --color-anchor-visited: #7fff7f;
-      }
-    }
-    
-    :root, html, body {
-      margin: 0;
-      height: 100%;
-      width: 100%;
-      -webkit-text-size-adjust: 100%;
-      background: var(--color-background);
-    }
-    main {
-      height: 100%;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-    main > #location {
-      height: 50px;
-      flex: none;
-      display: flex;
-      flex-direction: row;
-      background-color: var(--color-foreground);
-      justify-content: stretch;
-      align-items: stretch;
-    }
-    main > #location > #url {
-      appearance: none;
-      -webkit-appearance: none;
-      align-self: stretch;
-      justify-self: stretch;
-      text-align: center;
-      margin: 0;
-      padding: 0 5px;
-      border: 5px solid var(--color-foreground);
-      background-color: var(--color-background);
-      color: var(--color-foreground);
-      font-size: 16px;
-      font-family: var(--font-stack-monospace);
-      width: 100%;
-      height: 100%;
-    }
-    main > #location > #progress {
-      background: none;
-      border: none;
-      font-size: 0;
-      width: 50px;
-      height: 100%;
-      overflow: hidden;
-      font-family: var(--font-stack-monospace);
-      text-align: center;
-      flex: none;
-    }
-    main > #location > #progress:before {
-      content: '🐑';
-      font-size: 40px;
-      filter: invert(var(--filter-invert));
-    }
-    main > #location > #progress.active {
-      animation-name: spinner;
-      animation-timing-function: linear;
-      animation-duration: 1s;
-      animation-play-state: running;
-      animation-iteration-count: infinite;
-    }
-    @keyframes spinner {
-      from {
-        transform: rotateY(0deg);
-      }
-      to {
-        transform: rotateY(360deg);
-      }
-    }
-    main > article {
-      background: var(--color-background);
-      color: var(--color-foreground);
-      flex: auto;
-      overflow: hidden;
-      display: flex;
-      font-size: 0;
-    }
-    gaufre-viewport {
-      display: block;
-      text-align: center;
-      flex: auto;
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    gaufre-viewport > * {
-      padding: 1.25em 0.5em;
-      display: inline-block;
-      text-align: left;
-      font-size: 16px;
-      line-height: 1.25em;
-    }
-    @media (max-width: 700px) {
-      gaufre-viewport > * {
-        font-size: 14px;
-      }
-    }
-    @media (max-width: 600px) {
-      gaufre-viewport > * {
-        font-size: 12px;
-      }
-    }
-    gaufre-text {
-      white-space: pre;
-      font-family: var(--font-stack-monospace);
-    }
-    gaufre-error {
-      color: red;
-      white-space: pre;
-      font-family: var(--font-stack-monospace);
-    }
-    gaufre-image {
-      display: inline-block;
-    }
-    gaufre-image > img {
-      width: auto;
-    }
-    gaufre-image[zoomed] > img {
-      width: 100%;
-    }
-    gaufre-html {
-      border: 0;
-      overflow: hidden;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-    }
-    gaufre-html > iframe {
-      height: 100%;
-      width: 100%;
-      border: 0;
-    }
-    gaufre-pdf {
-      border: 0;
-      overflow: hidden;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-    }
-    gaufre-pdf > iframe {
-      height: 100%;
-      width: 100%;
-      border: 0;
-    }
-    gaufre-line {
-      display: block;
-    }
-    gaufre-line[format='error'] {
-      color: var(--color-error);
-    }
-    gaufre-line p {
-      white-space: pre;
-      font-family: var(--font-stack-monospace);
-      margin: 0;
-      min-height: 1em;
-    }
-    gaufre-line a {
-      text-decoration: none;
-      color: var(--color-anchor);
-    }
-    gaufre-line a:active {
-      color: var(--color-anchor-active);
-    }
-    gaufre-line a:visited {
-      color: var(--color-anchor-visited);
-    }
-    gaufre-line form {
-      max-width: calc(100vw - 1em);
-      display: flex;
-      margin: .5em 0;
-    }
-    gaufre-line form > input[type='search'] {
-      flex: 1 1 auto;
-      padding: .25em;
-      margin-right: .25em;
-      font-size: 1em;
-      font-family: var(--font-stack-monospace);
-      -webkit-appearance: none;
-      background-color: var(--color-background);
-      color: var(--color-foreground);
-    }
-    gaufre-line form > input[type='submit'] {
-      flex: none;
-      padding: .25em;
-      font-size: 1em;
-      font-family: var(--font-stack-monospace);
-      -webkit-appearance: none;
-      background-color: var(--color-background);
-      color: var(--color-foreground);
-    }
-    gaufre-unsupported {
-      display: block;
-      white-space: pre;
-      font-family: var(--font-stack-monospace);
-    }
-    gaufre-download {
-      font-family: var(--font-stack-monospace);
-    }
-    </style>
-    <main hidden>
+<style>
+@font-face {
+  font-family: font-stack-emoji;
+  unicode-range: U+1F300-1F5FF, U+1F600-1F64F, U+1F680-1F6FF, U+2600-26FF;
+  src: local(Segoe UI Emoji); /* Windows 8.1+ Edge fix */
+  src:
+    /* macOS, iOS */
+    local(Apple Color Emoji),
+    /* Windows 8.1+ */
+    local(Segoe UI Emoji),
+    /* Linux Firefox */
+    local(Twemoji Mozilla),
+    local(EmojiOne Mozilla),
+    /* Ubuntu Firefox */
+    local(Twitter Color Emoji),
+    /* Android */
+    local(Noto Color Emoji),
+    local(Android Emoji),
+    /* Linux */
+    local(Emoji One Color),
+    local(EmojiOne Color),
+    local(EmojiSymbols),
+    local(Symbola);
+}
+
+@font-face {
+  font-family: font-stack-monospace;
+  src:
+    local(Menlo),
+    local(Monaco),
+    local(Consolas),
+    local(DejaVu Sans Mono),
+    local(Bitstream Vera Sans Mono),
+    local(Andalé Mono);
+}
+
+:host,
+:root {
+  --font-stack-monospace:
+    /* The emoji stack has issues with Safari. On macOS some line endings */
+    /* are miscalculated, making links partially unclickable. */
+    /* font-stack-emoji, */
+    font-stack-monospace,
+    monospace;
+}
+
+:host,
+:root {
+  --filter-invert: 0;
+  --color-foreground: black;
+  --color-background: white;
+  --color-error: red;
+  --color-anchor: blue;
+  --color-anchor-active: red;
+  --color-anchor-visited: purple;
+}
+@media (prefers-color-scheme: dark) {
+  :host,
+  :root {
+    --filter-invert: 1;
+    --color-foreground: white;
+    --color-background: black;
+    --color-error: #00ffff;
+    --color-anchor: #ffff00;
+    --color-anchor-active: #ff0000;
+    --color-anchor-visited: #7fff7f;
+  }
+}
+
+:root, html, body {
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  -webkit-text-size-adjust: 100%;
+  background: var(--color-background);
+}
+main {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+main > #location {
+  height: 50px;
+  flex: none;
+  display: flex;
+  flex-direction: row;
+  background-color: var(--color-foreground);
+  justify-content: stretch;
+  align-items: stretch;
+}
+main > #location > #url {
+  appearance: none;
+  -webkit-appearance: none;
+  align-self: stretch;
+  justify-self: stretch;
+  text-align: center;
+  margin: 0;
+  padding: 0 5px;
+  border: 5px solid var(--color-foreground);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-size: 16px;
+  font-family: var(--font-stack-monospace);
+  width: 100%;
+  height: 100%;
+}
+main > #location > #progress {
+  background: none;
+  border: none;
+  font-size: 0;
+  width: 50px;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-stack-monospace);
+  text-align: center;
+  flex: none;
+}
+main > #location > #progress:before {
+  content: '🐑';
+  font-size: 40px;
+  filter: invert(var(--filter-invert));
+}
+main > #location > #progress.active {
+  animation-name: spinner;
+  animation-timing-function: linear;
+  animation-duration: 1s;
+  animation-play-state: running;
+  animation-iteration-count: infinite;
+}
+@keyframes spinner {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(360deg);
+  }
+}
+main > article {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  flex: auto;
+  overflow: hidden;
+  display: flex;
+  font-size: 0;
+}
+gaufre-viewport {
+  display: block;
+  text-align: center;
+  flex: auto;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+gaufre-viewport > * {
+  padding: 1.25em 0.5em;
+  display: inline-block;
+  text-align: left;
+  font-size: 16px;
+  line-height: 1.25em;
+}
+@media (max-width: 700px) {
+  gaufre-viewport > * {
+    font-size: 14px;
+  }
+}
+@media (max-width: 600px) {
+  gaufre-viewport > * {
+    font-size: 12px;
+  }
+}
+gaufre-text {
+  white-space: pre;
+  font-family: var(--font-stack-monospace);
+}
+gaufre-error {
+  color: red;
+  white-space: pre;
+  font-family: var(--font-stack-monospace);
+}
+gaufre-image {
+  display: inline-block;
+}
+gaufre-image > img {
+  width: auto;
+}
+gaufre-image[zoomed] > img {
+  width: 100%;
+}
+gaufre-html {
+  border: 0;
+  overflow: hidden;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+gaufre-html > iframe {
+  height: 100%;
+  width: 100%;
+  border: 0;
+}
+gaufre-pdf {
+  border: 0;
+  overflow: hidden;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+gaufre-pdf > iframe {
+  height: 100%;
+  width: 100%;
+  border: 0;
+}
+gaufre-line {
+  display: block;
+}
+gaufre-line[format='error'] {
+  color: var(--color-error);
+}
+gaufre-line p {
+  white-space: pre;
+  font-family: var(--font-stack-monospace);
+  margin: 0;
+  min-height: 1em;
+}
+gaufre-line a {
+  text-decoration: none;
+  color: var(--color-anchor);
+}
+gaufre-line a:active {
+  color: var(--color-anchor-active);
+}
+gaufre-line a:visited {
+  color: var(--color-anchor-visited);
+}
+gaufre-line form {
+  max-width: calc(100vw - 1em);
+  display: flex;
+  margin: .5em 0;
+}
+gaufre-line form > input[type='search'] {
+  flex: 1 1 auto;
+  padding: .25em;
+  margin-right: .25em;
+  font-size: 1em;
+  font-family: var(--font-stack-monospace);
+  -webkit-appearance: none;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
+gaufre-line form > input[type='submit'] {
+  flex: none;
+  padding: .25em;
+  font-size: 1em;
+  font-family: var(--font-stack-monospace);
+  -webkit-appearance: none;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
+gaufre-unsupported {
+  display: block;
+  white-space: pre;
+  font-family: var(--font-stack-monospace);
+}
+gaufre-download {
+  font-family: var(--font-stack-monospace);
+}
+</style>
+<main hidden>
   <form id="location">
     <input id="url" value="" name="url"
       type="search"
