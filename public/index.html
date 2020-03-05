@@ -80,6 +80,12 @@
   }
 }
 
+/*
+  Tip: Use --filter-invert with CSS filter functions to
+       toggle them based on dark/light mode theme.
+  Example: filter: invert(var(--filter-invert));
+*/
+
 :root, html, body {
   margin: 0;
   height: 100%;
@@ -94,13 +100,16 @@ main {
   flex-direction: column;
 }
 main > #location {
-  height: 50px;
+  position: relative;
+  height: 2em;
+  box-sizing: border-box;
   flex: none;
   display: flex;
   flex-direction: row;
-  background-color: var(--color-foreground);
   justify-content: stretch;
   align-items: stretch;
+  border: solid var(--color-foreground);
+  border-width: 0 0 2px 0;
 }
 main > #location > #url {
   appearance: none;
@@ -109,44 +118,71 @@ main > #location > #url {
   justify-self: stretch;
   text-align: center;
   margin: 0;
-  padding: 0 5px;
-  border: 5px solid var(--color-foreground);
+  padding: 0 .25em;
+  border: none;
   background-color: var(--color-background);
   color: var(--color-foreground);
-  font-size: 16px;
+  font-size: 1em;
   font-family: var(--font-stack-monospace);
   width: 100%;
   height: 100%;
 }
-main > #location > #progress {
-  background: none;
-  border: none;
-  font-size: 0;
-  width: 50px;
-  height: 100%;
-  overflow: hidden;
-  font-family: var(--font-stack-monospace);
-  text-align: center;
+main > #location > #url:focus {
+  outline: none;
+}
+main > #location > #menu {
+  display: none; /* TODO: Create menu UI */
   flex: none;
+  margin: 0;
+  padding: .25em 1em;
+  font-size: 1em;
+  font-family: var(--font-stack-monospace);
+  -webkit-appearance: none;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  border: none;
+  border-left-width: 2px;
+  border-left-style: solid;
+  border-color: var(--color-foreground);
 }
-main > #location > #progress:before {
-  content: '🐑';
-  font-size: 40px;
-  filter: invert(var(--filter-invert));
+main > #location > #menu:focus {
+  outline: none;
+  color: var(--color-background);
+  background-color: var(--color-foreground);
 }
-main > #location > #progress.active {
-  animation-name: spinner;
-  animation-timing-function: linear;
-  animation-duration: 1s;
+main > #location > #menu:before {
+  content: '▼';
+  margin-right: .5em;
+}
+main > #location.loading::after {
+  position: absolute;
+  content: '';
+  right: 0;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  background-image: linear-gradient(
+    90deg,
+    var(--color-foreground) 50%,
+    transparent 50%
+  );
+  background-size: 200vw 2px;
+  background-position-x: right;
+  animation-name: loading;
+  animation-timing-function: ease-in-out;
+  animation-delay: .1s;
+  animation-fill-mode: both;
+  animation-duration: 1.5s;
   animation-play-state: running;
+  animation-direction: alternate;
   animation-iteration-count: infinite;
 }
-@keyframes spinner {
+@keyframes loading {
   from {
-    transform: rotateY(0deg);
+    background-position-x: right;
   }
   to {
-    transform: rotateY(360deg);
+    background-position-x: left;
   }
 }
 main > article {
@@ -285,7 +321,7 @@ gaufre-download {
       autofocus
       mozactionhint="go" enterkeyhint="go"
       placeholder="Search or enter URL">
-    <button type="submit" id="progress">Loading activity indicator</button>
+    <button type="button" id="menu">Menu</button>
   </form>
   <article>
     <gaufre-viewport></gaufre-viewport>
@@ -714,8 +750,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     })
 
   gaufre.addEventListener('start', ({ detail: { url, endpoint } }) => {
-    document.getElementById('progress')
-      .classList.add('active')
+    document.getElementById('location').classList.add('loading')
     document.getElementById('url').value = encodeURI(url)
   })
   gaufre.addEventListener('error', async ({ detail }) => {
@@ -727,8 +762,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelector('gaufre-viewport').scrollTop = 0
   })
   gaufre.addEventListener('end', ({ detail: { url, endpoint } }) => {
-    document.getElementById('progress')
-      .classList.remove('active')
+    document.getElementById('location').classList.remove('loading')
   })
 
   document.addEventListener('download', async ({ detail }) => {
