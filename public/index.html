@@ -11,6 +11,72 @@
   <meta name="referrer" content="no-referrer">
 </head>
 <body>
+<style id="theme-monochrome-light" media="not all">
+:host,
+:root {
+  --color-foreground: black;
+  --color-background: white;
+  --color-error: red;
+  --color-anchor: blue;
+  --color-anchor-active: red;
+  --color-anchor-visited: purple;
+}
+</style>
+<style id="theme-monochrome-dark" media="not all">
+:host,
+:root {
+  --color-foreground: white;
+  --color-background: black;
+  --color-error: cyan;
+  --color-anchor: yellow;
+  --color-anchor-active: red;
+  --color-anchor-visited: chartreuse;
+}
+</style>
+<style id="theme-phosphor-light" media="not all">
+:host,
+:root {
+  --color-foreground: blue;
+  --color-background: white;
+  --color-error: red;
+  --color-anchor: fuchsia;
+  --color-anchor-active: red;
+  --color-anchor-visited: purple;
+}
+</style>
+<style id="theme-phosphor-dark" media="not all">
+:host,
+:root {
+  --color-foreground: lime;
+  --color-background: black;
+  --color-error: red;
+  --color-anchor: blue;
+  --color-anchor-active: red;
+  --color-anchor-visited: teal;
+}
+</style>
+<style id="theme-cyberwave-light" media="not all">
+:host,
+:root {
+  --color-foreground: magenta;
+  --color-background: aqua;
+  --color-error: salmon;
+  --color-anchor: dodgerblue;
+  --color-anchor-active: grey;
+  --color-anchor-visited: orange;
+}
+</style>
+<style id="theme-cyberwave-dark" media="not all">
+:host,
+:root {
+  --color-foreground: magenta;
+  --color-background: indigo;
+  --color-error: dodgerblue;
+  --color-anchor: aqua;
+  --color-anchor-active: lavender;
+  --color-anchor-visited: orange;
+}
+</style>
 <style>
 @font-face {
   font-family: font-stack-emoji;
@@ -35,7 +101,6 @@
     local(EmojiSymbols),
     local(Symbola);
 }
-
 @font-face {
   font-family: font-stack-monospace;
   src:
@@ -46,7 +111,6 @@
     local(Bitstream Vera Sans Mono),
     local(Andalé Mono);
 }
-
 :host,
 :root {
   --font-stack-monospace:
@@ -56,42 +120,27 @@
     font-stack-monospace,
     monospace;
 }
-
-:host,
-:root {
-  --filter-invert: 0;
-  --color-foreground: black;
-  --color-background: white;
-  --color-error: red;
-  --color-anchor: blue;
-  --color-anchor-active: red;
-  --color-anchor-visited: purple;
-}
-@media (prefers-color-scheme: dark) {
-  :host,
-  :root {
-    --filter-invert: 1;
-    --color-foreground: white;
-    --color-background: black;
-    --color-error: #00ffff;
-    --color-anchor: #ffff00;
-    --color-anchor-active: #ff0000;
-    --color-anchor-visited: #7fff7f;
-  }
-}
-
-/*
-  Tip: Use --filter-invert with CSS filter functions to
-       toggle them based on dark/light mode theme.
-  Example: filter: invert(var(--filter-invert));
-*/
-
+</style>
+<style>
 :root, html, body {
   margin: 0;
   height: 100%;
   width: 100%;
   -webkit-text-size-adjust: 100%;
   background: var(--color-background);
+}
+:root {
+  font-size: 16px;
+}
+@media (max-width: 700px) {
+  :root {
+    font-size: 14px;
+  }
+}
+@media (max-width: 600px) {
+  :root {
+    font-size: 12px;
+  }
 }
 main {
   height: 100%;
@@ -101,28 +150,43 @@ main {
 }
 main > #location {
   position: relative;
-  height: 2em;
+  height: 2rem;
   box-sizing: border-box;
   flex: none;
   display: flex;
   flex-direction: row;
   justify-content: stretch;
   align-items: stretch;
-  border: solid var(--color-foreground);
+  border-style: solid;
+  border-color: var(--color-foreground);
   border-width: 0 0 2px 0;
+}
+main > #location > #secure {
+  display: none;
+  position: absolute;
+  font-size: 0;
+}
+main > #location > #secure::before {
+  content: '🔒';
+  font-size: 1rem;
+  margin-left: .25rem;
+}
+main > #location[data-via~='TLSv1.2'] > #secure,
+main > #location[data-via~='TLSv1.3'] > #secure {
+  display: block;
 }
 main > #location > #url {
   appearance: none;
   -webkit-appearance: none;
   align-self: stretch;
   justify-self: stretch;
-  text-align: center;
+  text-align: var(--setting-alignment);
   margin: 0;
-  padding: 0 .25em;
+  padding: 0 1rem;
   border: none;
   background-color: var(--color-background);
   color: var(--color-foreground);
-  font-size: 1em;
+  font-size: 1rem;
   font-family: var(--font-stack-monospace);
   width: 100%;
   height: 100%;
@@ -130,12 +194,11 @@ main > #location > #url {
 main > #location > #url:focus {
   outline: none;
 }
-main > #location > #menu {
-  display: none; /* TODO: Create menu UI */
+main > #location > #menu-toggle {
   flex: none;
   margin: 0;
-  padding: .25em 1em;
-  font-size: 1em;
+  padding: .25rem 1rem;
+  font-size: 1rem;
   font-family: var(--font-stack-monospace);
   -webkit-appearance: none;
   background-color: var(--color-background);
@@ -143,16 +206,28 @@ main > #location > #menu {
   border: none;
   border-left-width: 2px;
   border-left-style: solid;
-  border-color: var(--color-foreground);
+  border-left-color: var(--color-foreground);
 }
-main > #location > #menu:focus {
+main > #location > #menu-toggle:focus {
   outline: none;
   color: var(--color-background);
   background-color: var(--color-foreground);
 }
-main > #location > #menu:before {
+main > #location > #menu-toggle:before {
+  display: inline-block;
   content: '▼';
-  margin-right: .5em;
+  margin-right: .5rem;
+  transform: rotateX(0deg);
+  transition-property: transform;
+  transition-duration: .25s;
+  transition-timing-function: ease-in-out;
+}
+main > #location > #menu-toggle.open {
+  color: var(--color-background);
+  background-color: var(--color-foreground);
+}
+main > #location > #menu-toggle.open:before {
+  transform: rotate(.5turn);
 }
 main > #location.loading::after {
   position: absolute;
@@ -195,26 +270,21 @@ main > article {
 }
 gaufre-viewport {
   display: block;
-  text-align: center;
+  text-align: var(--setting-alignment);
   flex: auto;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
 }
 gaufre-viewport > * {
-  padding: 1.25em 0.5em;
+  padding: 1.25rem 1rem;
   display: inline-block;
   text-align: left;
-  font-size: 16px;
-  line-height: 1.25em;
+  font-size: 1rem;
+  line-height: 1.25rem;
 }
 @media (max-width: 700px) {
   gaufre-viewport > * {
-    font-size: 14px;
-  }
-}
-@media (max-width: 600px) {
-  gaufre-viewport > * {
-    font-size: 12px;
+    padding: 1rem .5rem;
   }
 }
 gaufre-text {
@@ -222,7 +292,7 @@ gaufre-text {
   font-family: var(--font-stack-monospace);
 }
 gaufre-error {
-  color: red;
+  color: var(--color-error);
   white-space: pre;
   font-family: var(--font-stack-monospace);
 }
@@ -269,7 +339,7 @@ gaufre-line p {
   white-space: pre;
   font-family: var(--font-stack-monospace);
   margin: 0;
-  min-height: 1em;
+  min-height: 1rem;
 }
 gaufre-line a {
   text-decoration: none;
@@ -282,15 +352,15 @@ gaufre-line a:visited {
   color: var(--color-anchor-visited);
 }
 gaufre-line form {
-  max-width: calc(100vw - 1em);
+  max-width: calc(100vw - 1rem);
   display: flex;
-  margin: .5em 0;
+  margin: .5rem 0;
 }
 gaufre-line form > input[type='search'] {
   flex: 1 1 auto;
-  padding: .25em;
-  margin-right: .25em;
-  font-size: 1em;
+  padding: .25rem;
+  margin-right: .25rem;
+  font-size: 1rem;
   font-family: var(--font-stack-monospace);
   -webkit-appearance: none;
   background-color: var(--color-background);
@@ -298,8 +368,8 @@ gaufre-line form > input[type='search'] {
 }
 gaufre-line form > input[type='submit'] {
   flex: none;
-  padding: .25em;
-  font-size: 1em;
+  padding: .25rem;
+  font-size: 1rem;
   font-family: var(--font-stack-monospace);
   -webkit-appearance: none;
   background-color: var(--color-background);
@@ -313,20 +383,178 @@ gaufre-unsupported {
 gaufre-download {
   font-family: var(--font-stack-monospace);
 }
+#menu {
+  position: absolute;
+  top: 2rem;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  text-align: var(--setting-alignment);
+  padding: 1rem;
+  font-size: 1rem;
+  font-family: var(--font-stack-monospace);
+}
+#menu > form {
+  display: inline-block;
+  text-align: left;
+}
+#menu > form > section > h2 {
+  font-size: 1.25em;
+  margin: 1em 0 .25em 0;
+}
+#menu > form > section > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+#menu > form > section > p {
+  max-width: 45ch;
+}
+#menu > form > section.theme label {
+  margin: .25em 0;
+}
+#menu > form > section.dark-mode label {
+  margin: .25em 0;
+}
+#menu > form > section.alignment > div {
+  flex-direction: row;
+}
+#menu > form > section.alignment > div > label {
+  display: flex;
+  flex-direction: column;
+}
+#menu > form > section.alignment > div > label:nth-child(1) {
+  align-items: flex-start;
+}
+#menu > form > section.alignment > div > label:nth-child(2) {
+  align-items: center;
+  padding: 0 1em;
+}
+#menu > form > section.alignment > div > label:nth-child(3) {
+  align-items: flex-end;
+}
+#menu > form > section.goh > p {
+  margin: .5em 0;
+}
+#menu > form > section.goh > div > label {
+  display: inline-grid;
+  grid-template-areas:
+    'toggle name'
+    '. url';
+  grid-template-columns: auto 1fr;
+  margin: .25em 0;
+  width: 100%;
+}
+#menu > form > section.goh > div > label > input[name='proxy'] {
+  grid-area: toggle;
+  margin-right: 1em;
+}
+#menu > form > section.goh > div > label > span {
+  grid-area: name;
+}
+#menu > form > section.goh > div > label > input[type='url'] {
+  width: 100%;
+  box-sizing: border-box;
+  grid-area: url;
+  padding: .25rem;
+  font-size: 1rem;
+  font-family: var(--font-stack-monospace);
+  -webkit-appearance: none;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
 </style>
+
 <main hidden>
   <form id="location">
+    <div id="secure">Secure</div>
     <input id="url" value="" name="url"
       type="search"
       autofocus
       mozactionhint="go" enterkeyhint="go"
       placeholder="Search or enter URL">
-    <button type="button" id="menu">Menu</button>
+    <button type="button" id="menu-toggle">Menu</button>
   </form>
   <article>
     <gaufre-viewport></gaufre-viewport>
   </article>
 </main>
+
+<aside id="menu" hidden>
+  <form>
+    <section class="theme">
+      <h2>Theme</h2>
+      <div>
+        <label class="default">
+          <input type="radio" name="theme" value="monochrome">
+          <span>Monochrome</span>
+        </label>
+        <label>
+          <input type="radio" name="theme" value="phosphor">
+          <span>Phosphor</span>
+        </label>
+        <label>
+          <input type="radio" name="theme" value="cyberwave">
+          <span>Cyberwave</span>
+        </label>
+      </div>
+    </section>
+    <section class="dark-mode">
+      <h2>Dark Mode</h2>
+      <div>
+        <label class="default">
+          <input type="radio" name="dark-mode" value="auto">
+          <span>Auto</span>
+        </label>
+        <label>
+          <input type="radio" name="dark-mode" value="on">
+          <span>On</span>
+        </label>
+        <label>
+          <input type="radio" name="dark-mode" value="off">
+          <span>Off</span>
+        </label>
+      </div>
+    </section>
+    <section class="alignment">
+      <h2>Alignment</h2>
+      <div>
+        <label>
+          <input type="radio" name="alignment" value="left">
+          <span>Left</span>
+        </label>
+        <label class="default">
+          <input type="radio" name="alignment" value="center">
+          <span>Center</span>
+        </label>
+        <label>
+          <input type="radio" name="alignment" value="right">
+          <span>Right</span>
+        </label>
+      </div>
+    </section>
+    <section class="goh">
+      <h2>Gopher Proxy</h2>
+      <p>Choose a Gopher-over-HTTPS (GoH) gateway to connect to the Gopher network.</p>
+      <div>
+        <label class="default">
+          <input type="radio" name="proxy" value="commonshost">
+          <span>Commons Host</span>
+          <input type="url" name="commonshost" disabled value="https://commons.host">
+        </label>
+        <label>
+          <input type="radio" name="proxy" value="custom">
+          <span>Custom proxy server URL</span>
+          <input type="url" name="proxy-server" placeholder="https://example.com">
+        </label>
+      </div>
+    </section>
+  </form>
+</aside>
 
 <!-- <script src="https://unpkg.com/@ungap/event-target"></script> -->
 <script>
@@ -453,7 +681,7 @@ class GaufreViewport extends HTMLElement {
 
   error (error) {
     this.clear()
-    console.log(error)
+    console.error(error)
     const renderer = document.createElement('gaufre-error')
     renderer.textContent = error.message
     this.appendChild(renderer)
@@ -671,7 +899,7 @@ class Gaufre extends EventTarget {
     const matches = this.gopherTypeRegex.exec(url)
     const type = matches[1] || '1'
     const format = typeToFormat(type)
-    const endpoint = this.options.goh + encodeURIComponent(url)
+    const endpoint = this.goh(url)
     if (this.abortController) {
       this.abortController.abort()
     }
@@ -715,13 +943,83 @@ class Gaufre extends EventTarget {
     )
     delete this.abortController
   }
+
+  goh (gopherUrl) {
+    let proxy = this.options.goh
+    if (!/https?:\/\//.test(proxy)) {
+      proxy = 'https://' + proxy
+    }
+    let url
+    try {
+      url = new URL(proxy)
+    } catch (error) {
+      console.error(error)
+      return new URL()
+    }
+    url.searchParams.set('url', gopherUrl)
+    return url
+  }
+}
+
+function readSettings () {
+  const defaults = {
+    theme: 'monochrome',
+    'dark-mode': 'auto',
+    alignment: 'center',
+    proxy: 'commonshost',
+    'proxy-server': ''
+  }
+  let user
+  try {
+    user = JSON.parse(localStorage.getItem('gaufre'))
+  } catch (error) {
+    console.warn(error)
+  }
+  return {
+    ...defaults,
+    ...user
+  }
+}
+
+function updateMenuSettings (settings) {
+  const form = document.querySelector('#menu > form')
+  for (const [name, value] of Object.entries(settings)) {
+    form.elements[name].value = value
+  }
+}
+
+function applyViewportSettings (settings) {
+  const scheme = settings['dark-mode'] === 'on' ? 'dark'
+    : settings['dark-mode'] === 'off' ? 'light'
+      : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark'
+        : 'light'
+  const active = `theme-${settings.theme}-${scheme}`
+  const themes = document.querySelectorAll('style[id^="theme-"]')
+  for (const theme of themes) {
+    const media = theme.id === active ? 'all' : 'not all'
+    theme.setAttribute('media', media)
+  }
+  document.documentElement.style.setProperty(
+    '--setting-alignment', settings.alignment
+  )
+}
+
+function getProxyUrl ({ proxy, 'proxy-server': url }) {
+  switch (proxy) {
+    case 'custom':
+      return url
+    case 'commonshost':
+    default:
+      return 'https://commons.host'
+  }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
   const squashedGopherUrl = /^gopher:\/([^/])/
   const SEARCH = 'gopher://gopher.floodgap.com/7/v2/vs'
-  const goh = 'https://commons.host/?url='
-  const gaufre = new Gaufre({ goh })
+  let settings = readSettings()
+  applyViewportSettings(settings)
+  const gaufre = new Gaufre({ goh: getProxyUrl(settings) })
 
   document.getElementById('location')
     .addEventListener('submit', (event) => {
@@ -752,6 +1050,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   gaufre.addEventListener('start', ({ detail: { url, endpoint } }) => {
     document.getElementById('location').classList.add('loading')
     document.getElementById('url').value = encodeURI(url)
+    delete document.getElementById('location').dataset.via
   })
   gaufre.addEventListener('error', async ({ detail }) => {
     await document.querySelector('gaufre-viewport').error(detail)
@@ -760,13 +1059,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   gaufre.addEventListener('response', async ({ detail }) => {
     await document.querySelector('gaufre-viewport').load(detail)
     document.querySelector('gaufre-viewport').scrollTop = 0
+    if ('response' in detail) {
+      document.getElementById('location').dataset.via =
+        detail.response.headers.get('via')
+    }
   })
   gaufre.addEventListener('end', ({ detail: { url, endpoint } }) => {
     document.getElementById('location').classList.remove('loading')
   })
 
   document.addEventListener('download', async ({ detail }) => {
-    const url = goh + detail.href
+    const url = gaufre.goh(detail.href)
     const response = await fetch(url, {
       headers: { accept: 'application/gopher' }
     })
@@ -813,6 +1116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       })
       document.querySelector('gaufre-viewport').scrollTop = 0
       document.getElementById('url').value = ''
+      delete document.getElementById('location').dataset.via
       return
     } else if (path.startsWith('gopher://')) {
       gopherUrl = path
@@ -830,44 +1134,114 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.querySelector('main')
     .removeAttribute('hidden')
+
+  function toggleMenu () {
+    document.getElementById('menu').toggleAttribute('hidden')
+    document.getElementById('menu-toggle').classList.toggle('open')
+  }
+
+  document.getElementById('menu-toggle')
+    .addEventListener('click', () => {
+      document.getElementById('menu-toggle').blur()
+      updateMenuSettings(settings)
+      toggleMenu()
+    })
+
+  document.querySelector('#menu > form')
+    .addEventListener('input', ({ target }) => {
+      settings[target.name] = target.value
+      gaufre.options.goh = getProxyUrl(settings)
+      applyViewportSettings(settings)
+      const json = JSON.stringify(settings)
+      try {
+        localStorage.setItem('gaufre', json)
+      } catch (error) {
+        console.warn(error)
+      }
+    })
+
+  window.addEventListener('storage', () => {
+    settings = readSettings()
+    gaufre.options.goh = getProxyUrl(settings)
+    updateMenuSettings(settings)
+    applyViewportSettings(settings)
+  })
+
+  matchMedia('(prefers-color-scheme: dark)')
+    .addListener(() => applyViewportSettings(settings))
+
   router(window.location)
 })
 
 const HOME = `
-i  ___                             _  _        _   \t\t\t
-i / __|___ _ __  _ __  ___ _ _ ___| || |___ __| |_ \t\t\t
-i| (__/ _ \\ '  \\| '  \\/ _ \\ ' (_-<| __ / _ (_-<  _|\t\t\t
-i \\___\\___/_|_|_|_|_|_\\___/_\\_|__/|_||_\\___|__/\\__|\t\t\t
+i       _____              __          \t\t\t
+i      / ____|   Gaufre   / _|         \t\t\t
+i     | |  __  __ _ _   _| |_ _ __ ___ \t\t\t
+i     | | |_ |/ _\` | | | |  _| '__/ _ \\ \t\t\t
+i     | |__| | (_| | |_| | | | | |  __/\t\t\t
+i      \\_____|\\__,_|\\__,_|_| |_|  \\___|\t\t\t
 i\t\t\t
-i                🐑 Commons Host\t\t\t
+i        https://gopher.commons.host\t\t\t
 i\t\t\t
-i  The collaborative CDN for WWW, DNS, and Gopher.\t\t\t
+iGaufre is a Gopher browser in your web browser.\t\t\t
 i\t\t\t
 i+ Interesting Gopher Links\t\t\t
 i\t\t\t
-1  Floodgap    - Community pages & info\t\tgopher.floodgap.com\t70
-1  Hacker News - Tech news and discussion\t\thngopher.com\t70
-1  NPM         - Wombat, the marsupial Gopher\t/npm\tspaghetti.host\t70
-1  Gopherverse - All known Gopher servers\t/world\tgopher.floodgap.com\t70
+1  Gopherverse  - All known Gopher servers\t/world\tgopher.floodgap.com\t70
+1  Floodgap     - Community pages & info\t\tgopher.floodgap.com\t70
+1  Hacker News  - Tech news and discussion\t\thngopher.com\t70
+1  Commons Host - Gopherhole hosting & CDN\t\tcommons.host\t70
 i\t\t\t
-i+ About\t\t\t
+i+ About Gopher\t\t\t
 i\t\t\t
-iThis is a Gopher browser in your web browser.\t\t\t
+iGopher is an old protocol, around since 1991.\t\t\t
+iMost Gopher content is plain text but it also\t\t\t
+isupports images, audio, video, PDF, HTML, and\t\t\t
+ifile downloads.\t\t\t
 i\t\t\t
-iGopher is a humble protocol, around since 1991.\t\t\t
-iEnjoy the simplicity of text content. But it also \t\t\t
-isupports images, audio, video, PDF, and even HTML.\t\t\t
+i+ About Gaufre\t\t\t
 i\t\t\t
-iThe Commons Host edge network provides a global, \t\t\t
-ilow-latency, public Gopher-over-HTTP service.\t\t\t
-iGoH is a transport, not a translator. So this \t\t\t
-isingle-page app speaks pure, original Gopher.\t\t\t
+iGaufre uses modern web browser capabilities to\t\t\t
+imake Gopher content available without the need\t\t\t
+ito install additional software on your devices.\t\t\t
+i\t\t\t
+iGaufre tunnels all its Gopher traffic through a\t\t\t
+iGopher-over-HTTP (GoH) proxy service. GoH is an\t\t\t
+iexperimental protocol that transports raw Gopher\t\t\t
+itraffic using HTTP requests and responses.\t\t\t
+i\t\t\t
+iGaufre is français for waffle. 🧇\t\t\t
+i\t\t\t
+iTips:\t\t\t
+i\t\t\t
+i- The location bar (top) accepts any Gopher\t\t\t
+i  or web URL. Keywords are submitted to\t\t\t
+i  Veronica2, the de-facto Gopher search engine.\t\t\t
+i\t\t\t
+i- Open the Menu (top right) to configure themes,\t\t\t
+i  dark mode, alignment, or GoH proxy server.\t\t\t
+i\t\t\t
+i- Open your web browser's Developer Tools and\t\t\t
+i  check the Network tab to see Gopher traffic.\t\t\t
+i\t\t\t
+i- View the source of this page to see the entire\t\t\t
+i  Gaufre codebase. It is just a single page app,\t\t\t
+i  including this text.\t\t\t
+i\t\t\t
+i+ About Commons Host\t\t\t
+i\t\t\t
+iThe Commons Host CDN edge network provides a \t\t\t
+ipublic, low-latency Gopher-over-HTTP service.\t\t\t
+iAll its code is free and open source software.\t\t\t
 i\t\t\t
 i+ Web Links\t\t\t
 i\t\t\t
 h  Homepage    - Free and open source CDN\tURL:https://commons.host\t\t
 h  Contact     - @commonshost on Twitter\tURL:https://twitter.com/commonshost\t\t
-h  Source code - Protocol, servers, clients\tURL:https://www.npmjs.com/package/goh\t\t
+h  Source code - Client, proxy, server, protocol\tURL:https://www.gitlab.com/commonshost\t\t
+i\t\t\t
+i\t\t\t
+i              Gaufre v2.0.0\t\t\t
 `
 </script>
 </body>
