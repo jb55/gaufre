@@ -12,6 +12,10 @@
     "lint": "standard --verbose --plugin html '**/*.html' '*.js' | snazzy",
     "deploy": "commonshost deploy"
   },
+  "files": [
+    "public/",
+    "*.png"
+  ],
   "keywords": [
     "gopher",
     "gopheroverhttps",
