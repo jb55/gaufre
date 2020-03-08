@@ -77,7 +77,29 @@
   --color-anchor-visited: orange;
 }
 </style>
-<style>
+<style id="theme-vellum-light" media="not all">
+  :host,
+  :root {
+    --color-foreground: maroon;
+    --color-background: antiquewhite;
+    --color-error: orangered;
+    --color-anchor: darkgoldenrod;
+    --color-anchor-active: grey;
+    --color-anchor-visited: olive;
+  }
+  </style>
+  <style id="theme-vellum-dark" media="not all">
+  :host,
+  :root {
+    --color-foreground: whitesmoke;
+    --color-background: slategray;
+    --color-error: thistle;
+    --color-anchor: moccasin;
+    --color-anchor-active: mistyrose;
+    --color-anchor-visited: thistle;
+  }
+  </style>
+  <style>
 @font-face {
   font-family: font-stack-emoji;
   unicode-range: U+1F300-1F5FF, U+1F600-1F64F, U+1F680-1F6FF, U+2600-26FF;
@@ -500,6 +522,10 @@ gaufre-download {
         <label>
           <input type="radio" name="theme" value="cyberwave">
           <span>Cyberwave</span>
+        </label>
+        <label>
+          <input type="radio" name="theme" value="vellum">
+          <span>Vellum</span>
         </label>
       </div>
     </section>
@@ -1241,7 +1267,7 @@ h  Contact     - @commonshost on Twitter\tURL:https://twitter.com/commonshost\t\
 h  Source code - Client, proxy, server, protocol\tURL:https://www.gitlab.com/commonshost\t\t
 i\t\t\t
 i\t\t\t
-i              Gaufre v2.1.1\t\t\t
+i              Gaufre v2.2.0\t\t\t
 i            Sebastiaan Deckers\t\t\t
 i               ISC License\t\t\t
 `
