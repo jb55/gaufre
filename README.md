@@ -1,6 +1,6 @@
 # Gaufre
 
-Gopher-over-HTTPS (GoH) web client
+Gopher over HTTP (GoH) web client
 
 ![🧇 Waffle Emoji](./waffle_1f9c7.png)
 
