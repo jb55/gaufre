@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Gopher - Commons Host</title>
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="apple-touch-icon" href="/favicon.png">
@@ -462,6 +463,15 @@ gaufre-download {
 #menu > form > section.goh > p {
   margin: .5em 0;
 }
+#menu > form > section.goh > p > a {
+  color: var(--color-anchor);
+}
+#menu > form > section.goh > p > a:active {
+  color: var(--color-anchor-active);
+}
+#menu > form > section.goh > p > a > code {
+  font-family: var(--font-stack-monospace);
+}
 #menu > form > section.goh > div > label {
   display: inline-grid;
   grid-template-areas:
@@ -578,6 +588,11 @@ gaufre-download {
           <input type="url" name="proxy-server" placeholder="https://example.com">
         </label>
       </div>
+      <p>Tip: Run a local proxy server using
+        <a href="https://gitlab.com/commonshost/goh"
+          target="_blank"
+          rel="noreferrer noopener"><code>goh</code></a>.
+      </p>
     </section>
   </form>
 </aside>
@@ -1267,7 +1282,7 @@ h  Contact     - @commonshost on Twitter\tURL:https://twitter.com/commonshost\t\
 h  Source code - Client, proxy, server, protocol\tURL:https://www.gitlab.com/commonshost\t\t
 i\t\t\t
 i\t\t\t
-i              Gaufre v2.2.0\t\t\t
+i              Gaufre v2.2.1\t\t\t
 i            Sebastiaan Deckers\t\t\t
 i               ISC License\t\t\t
 `
