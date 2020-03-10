@@ -165,6 +165,16 @@
     font-size: 12px;
   }
 }
+@media (max-width: 360px) {
+  :root {
+    font-size: 11px;
+  }
+}
+@media (max-width: 320px) {
+  :root {
+    font-size: 10px;
+  }
+}
 main {
   height: 100%;
   width: 100%;
@@ -192,7 +202,7 @@ main > #location > #secure {
 }
 main > #location > #secure::before {
   content: '🔒';
-  font-size: 1em;
+  font-size: 16px;
   margin-left: .25em;
 }
 main > #location[data-via~='TLSv1.2'] > #secure,
@@ -206,7 +216,7 @@ main > #location > #url {
   justify-self: stretch;
   text-align: var(--setting-alignment);
   margin: 0;
-  padding: 0 1em;
+  padding: 0 0 0 1.25em;
   border: none;
   background-color: var(--color-background);
   color: var(--color-foreground);
