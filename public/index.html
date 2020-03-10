@@ -173,7 +173,8 @@ main {
 }
 main > #location {
   position: relative;
-  height: 2rem;
+  height: 2em;
+  font-size: 16px;
   box-sizing: border-box;
   flex: none;
   display: flex;
@@ -191,8 +192,8 @@ main > #location > #secure {
 }
 main > #location > #secure::before {
   content: '🔒';
-  font-size: 1rem;
-  margin-left: .25rem;
+  font-size: 1em;
+  margin-left: .25em;
 }
 main > #location[data-via~='TLSv1.2'] > #secure,
 main > #location[data-via~='TLSv1.3'] > #secure {
@@ -205,11 +206,11 @@ main > #location > #url {
   justify-self: stretch;
   text-align: var(--setting-alignment);
   margin: 0;
-  padding: 0 1rem;
+  padding: 0 1em;
   border: none;
   background-color: var(--color-background);
   color: var(--color-foreground);
-  font-size: 1rem;
+  font-size: 1em;
   font-family: var(--font-stack-monospace);
   width: 100%;
   height: 100%;
@@ -220,8 +221,8 @@ main > #location > #url:focus {
 main > #location > #menu-toggle {
   flex: none;
   margin: 0;
-  padding: .25rem 1rem;
-  font-size: 1rem;
+  padding: .25em 1em;
+  font-size: 1em;
   font-family: var(--font-stack-monospace);
   -webkit-appearance: none;
   background-color: var(--color-background);
@@ -239,7 +240,7 @@ main > #location > #menu-toggle:focus {
 main > #location > #menu-toggle:before {
   display: inline-block;
   content: '▼';
-  margin-right: .5rem;
+  margin-right: .5em;
   transform: rotateX(0deg);
   transition-property: transform;
   transition-duration: .25s;
@@ -408,7 +409,7 @@ gaufre-download {
 }
 #menu {
   position: absolute;
-  top: 2rem;
+  top: 32px;
   bottom: 0;
   left: 0;
   right: 0;
@@ -426,8 +427,8 @@ gaufre-download {
   text-align: left;
 }
 #menu > form > section > h2 {
-  font-size: 1.25em;
-  margin: 1em 0 .25em 0;
+  font-size: 1.25rem;
+  margin: 1rem 0 .25rem 0;
 }
 #menu > form > section > div {
   display: flex;
@@ -438,10 +439,10 @@ gaufre-download {
   max-width: 45ch;
 }
 #menu > form > section.theme label {
-  margin: .25em 0;
+  margin: .25rem 0;
 }
 #menu > form > section.dark-mode label {
-  margin: .25em 0;
+  margin: .25rem 0;
 }
 #menu > form > section.alignment > div {
   flex-direction: row;
@@ -455,13 +456,13 @@ gaufre-download {
 }
 #menu > form > section.alignment > div > label:nth-child(2) {
   align-items: center;
-  padding: 0 1em;
+  padding: 0 1rem;
 }
 #menu > form > section.alignment > div > label:nth-child(3) {
   align-items: flex-end;
 }
 #menu > form > section.goh > p {
-  margin: .5em 0;
+  margin: .5rem 0;
 }
 #menu > form > section.goh > p > a {
   color: var(--color-anchor);
@@ -478,12 +479,12 @@ gaufre-download {
     'toggle name'
     '. url';
   grid-template-columns: auto 1fr;
-  margin: .25em 0;
+  margin: .25rem 0;
   width: 100%;
 }
 #menu > form > section.goh > div > label > input[name='proxy'] {
   grid-area: toggle;
-  margin-right: 1em;
+  margin-right: 1rem;
 }
 #menu > form > section.goh > div > label > span {
   grid-area: name;
