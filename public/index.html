@@ -676,16 +676,16 @@ class GaufreViewport extends HTMLElement {
       const text = await response.text()
       for (const raw of text.split(/\r?\n/g)) {
         if (raw === '.') break
-        if (raw) {
-          const line = document.createElement('gaufre-line')
-          line.textContent = raw
-          renderer.appendChild(line)
-        }
+        const line = document.createElement('gaufre-line')
+        line.textContent = raw
+        renderer.appendChild(line)
       }
     } else if (format === 'text' || format === 'info') {
       const text = await response.text()
       renderer = document.createElement('gaufre-text')
-      renderer.textContent = text.replace(/^\.\./g, '.')
+      renderer.textContent = text
+        .replace(/^\.\./g, '.') // Escaped periods in Textfile Entity
+        .replace(/\r?\n\.$/, '') // Period on a line by itself (EOF)
     } else if (format === 'html') {
       const text = await response.text()
       renderer = document.createElement('gaufre-html')
@@ -718,7 +718,8 @@ class GaufreViewport extends HTMLElement {
       renderer.textContent = url
     } else if (format === 'error') {
       const text = await response.text()
-      this.error({ message: text })
+      const message = text.replace(/\r?\n\.$/, '')
+      this.error({ message })
       return
     } else {
       renderer = document.createElement('gaufre-unsupported')
