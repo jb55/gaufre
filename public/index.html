@@ -1076,6 +1076,35 @@ function getProxyUrl ({ proxy, 'proxy-server': url }) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   const squashedGopherUrl = /^gopher:\/([^/])/
+  const httpSchemes = /^https?:\/\/./
+  const webSchemes = /^web\+[a-z]+:./
+  const safelistedSchemes = new RegExp('^(' + [
+    // Custom
+    'telnet',
+    'ftp',
+    // Standard
+    // https://html.spec.whatwg.org/multipage/system-state.html#safelisted-scheme
+    'bitcoin',
+    'geo',
+    'im',
+    'irc',
+    'ircs',
+    'magnet',
+    'mailto',
+    'mms',
+    'news',
+    'nntp',
+    'openpgp4fpr',
+    'sip',
+    'sms',
+    'smsto',
+    'ssh',
+    'tel',
+    'urn',
+    'webcal',
+    'wtai',
+    'xmpp'
+  ].join('|') + '):.')
   const SEARCH = 'gopher://gopher.floodgap.com/7/v2/vs'
   let settings = readSettings()
   applyViewportSettings(settings)
@@ -1090,7 +1119,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         url = url.replace(squashedGopherUrl, 'gopher://$1')
         window.history.replaceState(null, '', '/' + url)
       }
-      if (/^https?:\/\/.+/.test(url)) {
+      if (
+        httpSchemes.test(url) ||
+        webSchemes.test(url) ||
+        safelistedSchemes.test(url)
+      ) {
         window.location = url
         return
       } else if (url.length && !url.startsWith('gopher://')) {
