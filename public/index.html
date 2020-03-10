@@ -952,9 +952,7 @@ class Gaufre extends EventTarget {
     const type = matches[1] || '1'
     const format = typeToFormat(type)
     const endpoint = this.goh(url)
-    if (this.abortController) {
-      this.abortController.abort()
-    }
+    this.abort()
     if (format === 'download') {
       const detail = { url, type, format }
       this.dispatchEvent(new CustomEvent('response', { detail }))
@@ -972,6 +970,7 @@ class Gaufre extends EventTarget {
       })
     } catch (error) {
       if (error.name === 'AbortError') {
+        this.dispatchEvent(new CustomEvent('abort', { detail: error }))
         return
       }
       this.dispatchEvent(new CustomEvent('error', { detail: error }))
@@ -994,6 +993,13 @@ class Gaufre extends EventTarget {
       new CustomEvent('end', { detail: { url, endpoint } })
     )
     delete this.abortController
+  }
+
+  abort () {
+    if (this.abortController) {
+      this.abortController.abort()
+      this.abortController = undefined
+    }
   }
 
   goh (gopherUrl) {
@@ -1099,6 +1105,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       window.dispatchEvent(new PopStateEvent('popstate'))
     })
 
+  document.getElementById('url')
+    .addEventListener('keydown', ({ keyCode }) => {
+      const ESC = 27
+      if (keyCode === ESC) {
+        gaufre.abort()
+      }
+    })
+
   gaufre.addEventListener('start', ({ detail: { url, endpoint } }) => {
     document.getElementById('location').classList.add('loading')
     document.getElementById('url').value = encodeURI(url)
@@ -1115,6 +1129,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('location').dataset.via =
         detail.response.headers.get('via')
     }
+  })
+  gaufre.addEventListener('abort', ({ detail: { url, endpoint } }) => {
+    document.getElementById('location').classList.remove('loading')
   })
   gaufre.addEventListener('end', ({ detail: { url, endpoint } }) => {
     document.getElementById('location').classList.remove('loading')
@@ -1169,6 +1186,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.querySelector('gaufre-viewport').scrollTop = 0
       document.getElementById('url').value = ''
       delete document.getElementById('location').dataset.via
+      gaufre.abort()
       return
     } else if (path.startsWith('gopher://')) {
       gopherUrl = path
