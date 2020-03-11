@@ -1,6 +1,6 @@
 {
   "name": "gaufre",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "Gopher over HTTP (GoH) web client",
   "repository": "gitlab:commonshost/gaufre",
   "author": "Sebastiaan Deckers <sebdeckers83@gmail.com>",
