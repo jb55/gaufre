@@ -9,7 +9,7 @@
   "scripts": {
     "start": "open public/index.html",
     "test": "npm run lint",
-    "lint": "standard --verbose --plugin html '**/*.html' '*.js' | snazzy",
+    "lint": "standard --verbose --plugin html '**/*.html' '*.js'",
     "deploy": "commonshost deploy"
   },
   "files": [
@@ -24,7 +24,6 @@
   "devDependencies": {
     "@commonshost/cli": "^5.1.0",
     "eslint-plugin-html": "^6.0.0",
-    "snazzy": "^8.0.0",
     "standard": "^14.3.1",
     "tape": "^4.13.2"
   }
