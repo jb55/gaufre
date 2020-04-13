@@ -18,8 +18,7 @@
   ],
   "keywords": [
     "gopher",
-    "gopheroverhttps",
-    "goh"
+    "gopher-over-http"
   ],
   "devDependencies": {
     "@commonshost/cli": "^5.1.0",
