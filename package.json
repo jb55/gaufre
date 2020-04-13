@@ -1,7 +1,7 @@
 {
   "name": "gaufre",
   "version": "2.6.1",
-  "description": "Gopher over HTTP (GoH) web client",
+  "description": "Gopher Browser for the Web Browser",
   "repository": "gitlab:commonshost/gaufre",
   "author": "Sebastiaan Deckers <sebdeckers83@gmail.com>",
   "license": "ISC",

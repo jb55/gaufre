@@ -1,6 +1,6 @@
 # Gaufre
 
-Gopher over HTTP (GoH) web client
+Gopher Browser for the Web Browser
 
 ![🧇 Waffle Emoji](./waffle_1f9c7.png)
 
@@ -30,7 +30,7 @@ Listening on http://localhost:3000
 
 ## GoH Proxy
 
-Gaufre defaults to using the public GoH proxy service offered by the [Commons Host CDN](https://commons.host).
+Gaufre defaults to using the public Gopher over HTTP (GoH) proxy service offered by the [Commons Host](https://commons.host) open source CDN project.
 
 To use your own local GoH proxy, install [Node.js](https://nodejs.org) and run:
 
