@@ -655,8 +655,9 @@ function typeToFormat (type, fallback = 'directory') {
 
 function parseLine (line) {
   const type = line.charAt(0)
-  const [name, selector, host, port] = line.substr(1).split('\t')
-  const origin = port === '70' ? host : `${host}:${port}`
+  const [name, selector = '', host = '', port = ''] = line.substr(1).split('\t')
+  const origin = (port === '70' || port === '' || /\D/.test(port))
+    ? host : `${host}:${port}`
   const path = (selector.length === 0 && type === '1')
     ? '' : `/${type}${selector}`
   return { type, name, selector, host, port, origin, path }
@@ -678,7 +679,7 @@ class GaufreViewport extends HTMLElement {
       for (const raw of text.split(/\r?\n/g)) {
         if (raw === '.') break
         const line = document.createElement('gaufre-line')
-        line.textContent = raw
+        line.textContent = raw || 'i' // Fallback: blank text line
         renderer.appendChild(line)
       }
     } else if (format === 'text' || format === 'info') {
