@@ -1116,7 +1116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     .addEventListener('submit', (event) => {
       event.stopPropagation()
       event.preventDefault()
-      let url = document.getElementById('url').value
+      let url = document.getElementById('url').value.trim()
       if (squashedGopherUrl.test(url)) {
         url = url.replace(squashedGopherUrl, 'gopher://$1')
         window.history.replaceState(null, '', '/' + url)
@@ -1129,10 +1129,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.location = url
         return
       } else if (url.length && !url.startsWith('gopher://')) {
-        if (!url.includes('.') || url.includes(' ')) {
-          url = `${SEARCH}%09${url}`
-        } else {
+        if (
+          url.startsWith('localhost') ||
+          url.includes('.') ||
+          url.includes(':')
+        ) {
           url = `gopher://${url}`
+        } else {
+          url = `${SEARCH}%09${url}`
         }
       }
       const href = window.location.origin + '/' + url
