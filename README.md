@@ -13,6 +13,12 @@ Gopher Browser for the Web Browser
 
 https://gopher.commons.host
 
+## Video
+
+Presented by [Sebastiaan Deckers](https://twitter.com/sebdeckers) at [WFHConf](gopher://wfhconf.commons.host) on 2020-03-26.
+
+[![Talk about Gopher at WFHConf 2020](./wfhconf-talk.jpg)](https://www.youtube.com/watch?v=4OphAbBnZSs)
+
 ## CLI
 
 Runs a local webserver that serves Gaufre.
