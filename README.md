@@ -2,7 +2,7 @@
 
 Gopher Browser for the Web Browser
 
-![🧇 Waffle Emoji](./waffle_1f9c7.png)
+![🧇 Waffle Emoji](./public/favicon.ico)
 
 **gaufre** *[noun **goh**-fer]*
 

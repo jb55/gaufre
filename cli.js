@@ -7,8 +7,8 @@ const { join } = require('path')
 
 async function main () {
   const server = createServer((request, response) => {
-    const url = request.url === '/favicon.png'
-      ? 'favicon.png' : 'index.html'
+    const url = request.url === '/favicon.ico'
+      ? 'favicon.ico' : 'index.html'
     console.log(request.method, request.url)
     const filepath = join(__dirname, 'public', url)
     const file = createReadStream(filepath)

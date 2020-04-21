@@ -1,6 +1,6 @@
 {
   "name": "gaufre",
-  "version": "2.8.1",
+  "version": "2.9.0",
   "description": "Gopher Browser for the Web Browser",
   "repository": "gitlab:commonshost/gaufre",
   "author": "Sebastiaan Deckers <sebdeckers83@gmail.com>",
@@ -14,7 +14,7 @@
   },
   "files": [
     "public/",
-    "*.png"
+    "*.ico"
   ],
   "keywords": [
     "gopher",
