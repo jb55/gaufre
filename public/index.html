@@ -229,41 +229,6 @@ main > #location > #url {
 main > #location > #url:focus {
   outline: none;
 }
-main > #location > #menu-toggle {
-  flex: none;
-  margin: 0;
-  padding: .25em 1em;
-  font-size: 1em;
-  font-family: var(--font-stack-monospace);
-  -webkit-appearance: none;
-  background-color: var(--color-background);
-  color: var(--color-foreground);
-  border: none;
-  border-left-width: 2px;
-  border-left-style: solid;
-  border-left-color: var(--color-foreground);
-}
-main > #location > #menu-toggle:focus {
-  outline: none;
-  color: var(--color-background);
-  background-color: var(--color-foreground);
-}
-main > #location > #menu-toggle:before {
-  display: inline-block;
-  content: '▼';
-  margin-right: .5em;
-  transform: rotateX(0deg);
-  transition-property: transform;
-  transition-duration: .25s;
-  transition-timing-function: ease-in-out;
-}
-main > #location > #menu-toggle.open {
-  color: var(--color-background);
-  background-color: var(--color-foreground);
-}
-main > #location > #menu-toggle.open:before {
-  transform: rotate(.5turn);
-}
 main > #location.loading::after {
   position: absolute;
   content: '';
@@ -514,15 +479,6 @@ gaufre-download {
 </style>
 
 <main hidden>
-  <form id="location">
-    <div id="secure">Secure</div>
-    <input id="url" value="" name="url"
-      type="search"
-      autofocus
-      mozactionhint="go" enterkeyhint="go"
-      placeholder="Search or enter URL">
-    <button type="button" id="menu-toggle">Menu</button>
-  </form>
   <article>
     <gaufre-viewport></gaufre-viewport>
   </article>
@@ -798,14 +754,6 @@ class GaufreLine extends HTMLElement {
       this.appendChild(paragraph)
     } else if (format === 'search') {
       const form = document.createElement('form')
-      form.addEventListener('submit', () => {
-        event.stopPropagation()
-        event.preventDefault()
-        const url = `gopher://${origin}${path}%09${encodeURI(input.value)}`
-        const href = window.location.origin + `/${url}`
-        window.history.pushState(null, '', href)
-        window.dispatchEvent(new PopStateEvent('popstate'))
-      })
       const input = document.createElement('input')
       input.setAttribute('type', 'search')
       input.setAttribute('placeholder', name)
@@ -1112,52 +1060,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   applyViewportSettings(settings)
   const gaufre = new Gaufre({ goh: getProxyUrl(settings) })
 
-  document.getElementById('location')
-    .addEventListener('submit', (event) => {
-      event.stopPropagation()
-      event.preventDefault()
-      let url = document.getElementById('url').value.trim()
-      if (squashedGopherUrl.test(url)) {
-        url = url.replace(squashedGopherUrl, 'gopher://$1')
-        window.history.replaceState(null, '', '/' + url)
-      }
-      if (
-        httpSchemes.test(url) ||
-        webSchemes.test(url) ||
-        safelistedSchemes.test(url)
-      ) {
-        window.location = url
-        return
-      } else if (url.length && !url.startsWith('gopher://')) {
-        if (
-          url.startsWith('localhost') ||
-          url.includes('.') ||
-          url.includes(':')
-        ) {
-          url = `gopher://${url}`
-        } else {
-          url = `${SEARCH}%09${url}`
-        }
-      }
-      const href = window.location.origin + '/' + url
-      if (window.location.href !== href) {
-        window.history.pushState(null, '', href)
-      }
-      window.dispatchEvent(new PopStateEvent('popstate'))
-    })
-
-  document.getElementById('url')
-    .addEventListener('keydown', ({ keyCode }) => {
-      const ESC = 27
-      if (keyCode === ESC) {
-        gaufre.abort()
-      }
-    })
-
   gaufre.addEventListener('start', ({ detail: { url, endpoint } }) => {
     document.getElementById('location').classList.add('loading')
     document.getElementById('url').value = encodeURI(url)
-    delete document.getElementById('location').dataset.via
   })
   gaufre.addEventListener('error', async ({ detail }) => {
     await document.querySelector('gaufre-viewport').error(detail)
@@ -1167,8 +1072,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     await document.querySelector('gaufre-viewport').load(detail)
     document.querySelector('gaufre-viewport').scrollTop = 0
     if ('response' in detail) {
-      document.getElementById('location').dataset.via =
-        detail.response.headers.get('via')
     }
   })
   gaufre.addEventListener('abort', ({ detail: { url, endpoint } }) => {
@@ -1213,24 +1116,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const title = document.title
   function router (url) {
-    const path = decodeURI(url.href.substr(url.origin.length + 1))
+
+    const ourUrl = 'gopher://jb55.com'
+
+    let path = decodeURI(url.href.substr(url.origin.length))
     let gopherUrl
     if (path === '') {
-      document.title = title
-      document.querySelector('gaufre-viewport').load({
-        format: 'directory',
-        type: '1',
-        response: {
-          text: () => HOME
-        }
-      })
-      document.querySelector('gaufre-viewport').scrollTop = 0
-      document.getElementById('url').value = ''
-      delete document.getElementById('location').dataset.via
-      gaufre.abort()
-      return
-    } else if (path.startsWith('gopher://')) {
-      gopherUrl = path
+      path = ourUrl
+    }
+
+    if (!path.startsWith('/gopher://')) {
+      gopherUrl = ourUrl + path
+    } else if (path.startsWith('/' + ourUrl)) {
+      let stripped = path.replace('/' + ourUrl, '')
+      console.log('stripped', stripped)
+      gopherUrl = ourUrl + stripped
+      window.history.replaceState(null, '', stripped)
+    } else if (path.startsWith('/gopher://')) {
+      gopherUrl = path.substr(1)
     } else if (squashedGopherUrl.test(path)) {
       gopherUrl = path.replace(squashedGopherUrl, 'gopher://')
       window.history.replaceState(null, '', '/' + gopherUrl)
@@ -1245,18 +1148,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.querySelector('main')
     .removeAttribute('hidden')
-
-  function toggleMenu () {
-    document.getElementById('menu').toggleAttribute('hidden')
-    document.getElementById('menu-toggle').classList.toggle('open')
-  }
-
-  document.getElementById('menu-toggle')
-    .addEventListener('click', () => {
-      document.getElementById('menu-toggle').blur()
-      updateMenuSettings(settings)
-      toggleMenu()
-    })
 
   document.querySelector('#menu > form')
     .addEventListener('input', ({ target }) => {
