@@ -1061,7 +1061,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const gaufre = new Gaufre({ goh: getProxyUrl(settings) })
 
   gaufre.addEventListener('start', ({ detail: { url, endpoint } }) => {
-    document.getElementById('location').classList.add('loading')
     document.getElementById('url').value = encodeURI(url)
   })
   gaufre.addEventListener('error', async ({ detail }) => {
@@ -1073,12 +1072,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelector('gaufre-viewport').scrollTop = 0
     if ('response' in detail) {
     }
-  })
-  gaufre.addEventListener('abort', ({ detail: { url, endpoint } }) => {
-    document.getElementById('location').classList.remove('loading')
-  })
-  gaufre.addEventListener('end', ({ detail: { url, endpoint } }) => {
-    document.getElementById('location').classList.remove('loading')
   })
 
   document.addEventListener('download', async ({ detail }) => {
